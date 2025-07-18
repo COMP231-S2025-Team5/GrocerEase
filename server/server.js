@@ -4,9 +4,9 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 
 // Import routes
+import searchRoutes from './routes/search.js';
+import itemRoutes from './routes/items.js';
 import authRoutes from './routes/auth.js';
-import groceryItemRoutes from './routes/groceryItems.js';
-import { errorHandler, notFound } from './middleware/errorHandler.js';
 
 // Load environment variables
 dotenv.config();
@@ -22,16 +22,30 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Basic route
+// Basic routes
 app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to GrocerEase API!' });
+  res.json({ 
+    message: 'Welcome to GrocerEase API!',
+    endpoints: {
+      home: '/',
+      search: '/api/search',
+      item: '/api/item/:id',
+      login: '/api/auth/login'
+    }
+  });
 });
+
+// Using route files
+app.use('/api/search', searchRoutes);
+app.use('/api/item', itemRoutes);
+app.use('/api/auth', authRoutes);
 
 // Connect to MongoDB
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/grocerease');
+    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/GrocerEase');
     console.log(`MongoDB Connected: ${conn.connection.host}`);
+    console.log(`Database: ${conn.connection.db.databaseName}`);
   } catch (error) {
     console.error('Database connection error:', error);
     process.exit(1);
