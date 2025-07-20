@@ -37,7 +37,7 @@ app.get('/', (req, res) => {
 
 // Using route files
 app.use('/api/search', searchRoutes);
-app.use('/api/item', itemRoutes);
+app.use('/api/items', itemRoutes);
 app.use('/api/auth', authRoutes);
 
 // Connect to MongoDB
