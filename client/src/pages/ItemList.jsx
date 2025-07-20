@@ -1,4 +1,14 @@
-const GroceryItemTable = ({ items }) => {
+import React, { useEffect, useState } from 'react';
+
+const GroceryItemTable = () => {
+  const [items, setItems] = useState([]);
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/items') // change to your actual endpoint
+      .then(res => res.json())
+      .then(data => setItems(data))
+      .catch(err => console.error('Failed to fetch items:', err));
+  }, []);
   return (
     <table style={{ borderCollapse: 'collapse', width: '100%', marginTop: '20px' }}>
       <thead>
