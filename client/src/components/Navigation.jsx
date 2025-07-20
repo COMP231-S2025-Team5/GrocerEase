@@ -5,6 +5,7 @@ const Navigation = () => {
   const navItems = [
     { path: '/', label: 'Home' },
     { path: '/search', label: 'Search' },
+    { path: '/itemlist', label: 'Browse Items' },
     { path: '/login', label: 'Login' }
   ];
 
