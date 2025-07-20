@@ -5,6 +5,7 @@ import Homepage from './pages/Homepage';
 import SearchPage from './pages/SearchPage';
 import ItemPage from './pages/ItemPage';
 import LoginPage from './pages/LoginPage';
+import ItemList from './pages/ItemList';
 import './App.css';
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
           <Route path="/search" element={<SearchPage />} />
           <Route path="/item/:id" element={<ItemPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/itemlist" element={<ItemList />} />
         </Routes>
       </div>
     </Router>
