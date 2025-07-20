@@ -1,16 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const ItemPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Report functionality state
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportReason, setReportReason] = useState('');
+  const [reportDescription, setReportDescription] = useState('');
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportMessage, setReportMessage] = useState({ text: '', type: '' });
+  const [hasReported, setHasReported] = useState(false);
+  const [reportReasons, setReportReasons] = useState([]);
 
   useEffect(() => {
     fetchItem();
-  }, [id]);
+    fetchReportReasons();
+    if (isAuthenticated && id) {
+      checkReportStatus();
+    }
+  }, [id, isAuthenticated]);
 
   const fetchItem = async () => {
     try {
@@ -53,6 +68,96 @@ const ItemPage = () => {
     const savings = originalPrice - currentPrice;
     const percentage = ((savings / originalPrice) * 100).toFixed(0);
     return { amount: savings, percentage };
+  };
+
+  const fetchReportReasons = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/reports/reasons');
+      if (response.ok) {
+        const data = await response.json();
+        setReportReasons(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching report reasons:', error);
+    }
+  };
+
+  const checkReportStatus = async () => {
+    try {
+      const token = localStorage.getItem('grocerease_token');
+      if (!token) return;
+
+      const response = await fetch(`http://localhost:5000/api/reports/check/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setHasReported(data.data.hasReported);
+      }
+    } catch (error) {
+      console.error('Error checking report status:', error);
+    }
+  };
+
+  const handleReportSubmit = async () => {
+    if (!reportReason) {
+      setReportMessage({ text: 'Please select a reason for reporting this item.', type: 'error' });
+      return;
+    }
+
+    setReportLoading(true);
+    setReportMessage({ text: '', type: '' });
+
+    try {
+      const token = localStorage.getItem('grocerease_token');
+      if (!token) {
+        setReportMessage({ text: 'Authentication token not found. Please log in again.', type: 'error' });
+        setReportLoading(false);
+        return;
+      }
+
+      const response = await fetch('http://localhost:5000/api/reports', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          itemId: id,
+          reason: reportReason,
+          description: reportDescription.trim() || undefined
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setReportMessage({ text: data.message, type: 'success' });
+        setHasReported(true);
+        setTimeout(() => {
+          setShowReportModal(false);
+          setReportReason('');
+          setReportDescription('');
+          setReportMessage({ text: '', type: '' });
+        }, 2000);
+      } else {
+        setReportMessage({ text: data.message, type: 'error' });
+      }
+    } catch (error) {
+      setReportMessage({ text: 'Failed to submit report. Please try again.', type: 'error' });
+    } finally {
+      setReportLoading(false);
+    }
+  };
+
+  const handleReportCancel = () => {
+    setShowReportModal(false);
+    setReportReason('');
+    setReportDescription('');
+    setReportMessage({ text: '', type: '' });
   };
 
   if (loading) {
@@ -444,23 +549,254 @@ const ItemPage = () => {
 
       {/* Back to Browse Button */}
       <div style={{ textAlign: 'center', marginTop: '40px', marginBottom: '20px' }}>
-        <Link
-          to="/itemlist"
-          style={{
-            display: 'inline-block',
-            padding: '12px 30px',
-            backgroundColor: '#6c757d',
-            color: 'white',
-            textDecoration: 'none',
+        <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <Link
+            to="/itemlist"
+            style={{
+              display: 'inline-block',
+              padding: '12px 30px',
+              backgroundColor: '#6c757d',
+              color: 'white',
+              textDecoration: 'none',
+              borderRadius: '6px',
+              fontSize: '1rem',
+              fontWeight: '600',
+              transition: 'background-color 0.2s'
+            }}
+          >
+            ← Back to All Items
+          </Link>
+
+          {/* Report Item Button - Only show if authenticated */}
+          {isAuthenticated && (
+            <button
+              onClick={() => {
+                if (hasReported) {
+                  setReportMessage({ text: 'You have already reported this item.', type: 'info' });
+                  setTimeout(() => setReportMessage({ text: '', type: '' }), 3000);
+                } else {
+                  setShowReportModal(true);
+                }
+              }}
+              disabled={hasReported}
+              style={{
+                padding: '12px 30px',
+                backgroundColor: hasReported ? '#6c757d' : '#dc3545',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '1rem',
+                fontWeight: '600',
+                cursor: hasReported ? 'not-allowed' : 'pointer',
+                transition: 'background-color 0.2s',
+                opacity: hasReported ? 0.6 : 1
+              }}
+            >
+              {hasReported ? '✓ Reported' : '🚩 Report Item'}
+            </button>
+          )}
+        </div>
+
+        {/* Show message for report actions */}
+        {reportMessage.text && !showReportModal && (
+          <div style={{
+            marginTop: '15px',
+            padding: '10px 15px',
             borderRadius: '6px',
-            fontSize: '1rem',
-            fontWeight: '600',
-            transition: 'background-color 0.2s'
-          }}
-        >
-          ← Back to All Items
-        </Link>
+            backgroundColor: reportMessage.type === 'success' ? '#d4edda' : 
+                            reportMessage.type === 'error' ? '#f8d7da' : '#d1ecf1',
+            border: `1px solid ${reportMessage.type === 'success' ? '#c3e6cb' : 
+                                 reportMessage.type === 'error' ? '#f5c6cb' : '#bee5eb'}`,
+            color: reportMessage.type === 'success' ? '#155724' : 
+                   reportMessage.type === 'error' ? '#721c24' : '#0c5460',
+            maxWidth: '500px',
+            margin: '15px auto'
+          }}>
+            {reportMessage.text}
+          </div>
+        )}
       </div>
+
+      {/* Report Modal */}
+      {showReportModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '30px',
+            width: '100%',
+            maxWidth: '500px',
+            boxShadow: '0 10px 25px rgba(0, 0, 0, 0.2)'
+          }}>
+            <div style={{ marginBottom: '25px' }}>
+              <h2 style={{
+                color: '#333',
+                marginBottom: '10px',
+                fontSize: '1.5rem',
+                fontWeight: '600'
+              }}>
+                🚩 Report Item
+              </h2>
+              <p style={{ color: '#666', margin: 0 }}>
+                Help us improve by reporting issues with "{item.itemName}"
+              </p>
+            </div>
+
+            {/* Report Message */}
+            {reportMessage.text && (
+              <div style={{
+                padding: '12px 16px',
+                borderRadius: '6px',
+                marginBottom: '20px',
+                backgroundColor: reportMessage.type === 'success' ? '#d4edda' : '#f8d7da',
+                border: `1px solid ${reportMessage.type === 'success' ? '#c3e6cb' : '#f5c6cb'}`,
+                color: reportMessage.type === 'success' ? '#155724' : '#721c24'
+              }}>
+                {reportMessage.text}
+              </div>
+            )}
+
+            {/* Reason Selection */}
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{
+                display: 'block',
+                marginBottom: '10px',
+                fontWeight: '600',
+                color: '#333'
+              }}>
+                Reason for Report *
+              </label>
+              <select
+                value={reportReason}
+                onChange={(e) => setReportReason(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '2px solid #e1e5e9',
+                  borderRadius: '6px',
+                  fontSize: '16px',
+                  outline: 'none',
+                  backgroundColor: '#f0f8ff',
+                  color: '#333'
+                }}
+              >
+                <option value="">Select a reason...</option>
+                {reportReasons.map(reason => (
+                  <option key={reason.value} value={reason.value}>
+                    {reason.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Optional Description */}
+            <div style={{ marginBottom: '25px' }}>
+              <label style={{
+                display: 'block',
+                marginBottom: '10px',
+                fontWeight: '600',
+                color: '#333'
+              }}>
+                Additional Details (Optional)
+              </label>
+              <textarea
+                value={reportDescription}
+                onChange={(e) => setReportDescription(e.target.value)}
+                placeholder="Provide any additional details about the issue..."
+                maxLength={500}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '2px solid #e1e5e9',
+                  borderRadius: '6px',
+                  fontSize: '16px',
+                  outline: 'none',
+                  backgroundColor: '#f0f8ff',
+                  color: '#333',
+                  minHeight: '80px',
+                  resize: 'vertical',
+                  fontFamily: 'inherit'
+                }}
+              />
+              <div style={{
+                textAlign: 'right',
+                fontSize: '12px',
+                color: '#666',
+                marginTop: '5px'
+              }}>
+                {reportDescription.length}/500 characters
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{
+              display: 'flex',
+              gap: '15px',
+              justifyContent: 'flex-end'
+            }}>
+              <button
+                onClick={handleReportCancel}
+                disabled={reportLoading}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#6c757d',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: reportLoading ? 'not-allowed' : 'pointer',
+                  opacity: reportLoading ? 0.6 : 1
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleReportSubmit}
+                disabled={reportLoading || !reportReason}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: reportLoading || !reportReason ? '#6c757d' : '#dc3545',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: reportLoading || !reportReason ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                {reportLoading && (
+                  <span style={{
+                    display: 'inline-block',
+                    width: '16px',
+                    height: '16px',
+                    border: '2px solid #ffffff',
+                    borderTop: '2px solid transparent',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }}></span>
+                )}
+                {reportLoading ? 'Submitting...' : 'Submit Report'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
