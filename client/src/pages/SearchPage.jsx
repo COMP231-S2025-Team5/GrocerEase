@@ -157,7 +157,9 @@ const SearchPage = () => {
       padding: '20px',
       maxWidth: '1400px',
       margin: '0 auto',
-      width: '100%'
+      width: '100%',
+      backgroundColor: '#f8f9fa',
+      minHeight: 'calc(100vh - 60px)'
     }}>
       {/* Header */}
       <div style={{
@@ -182,7 +184,8 @@ const SearchPage = () => {
         padding: '20px',
         borderRadius: '8px',
         boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-        marginBottom: '20px'
+        marginBottom: '20px',
+        border: '1px solid #b8e0ff'
       }}>
         {/* Main Search Bar */}
         <div style={{ marginBottom: '15px' }}>
@@ -194,14 +197,16 @@ const SearchPage = () => {
             style={{
               width: '100%',
               padding: '12px 16px',
-              border: '2px solid #e1e5e9',
+              border: '2px solid #b8e0ff',
               borderRadius: '6px',
               fontSize: '16px',
               outline: 'none',
-              transition: 'border-color 0.2s'
+              transition: 'border-color 0.2s',
+              backgroundColor: '#f0f8ff',
+              color: '#333'
             }}
             onFocus={(e) => e.target.style.borderColor = '#007bff'}
-            onBlur={(e) => e.target.style.borderColor = '#e1e5e9'}
+            onBlur={(e) => e.target.style.borderColor = '#b8e0ff'}
           />
         </div>
 
@@ -222,9 +227,12 @@ const SearchPage = () => {
           >
             {showFilters ? 'Hide Filters' : 'Show Filters'} ({(() => {
               const params = Object.fromEntries(searchParams);
-              const filterParams = Object.keys(params).filter(key => 
-                key !== 'q' && key !== 'page' && params[key] && params[key] !== 'all' && params[key] !== ''
-              );
+              const filterParams = Object.keys(params).filter(key => {
+                if (key === 'q' || key === 'page') return false;
+                const value = params[key];
+                if (!value || value === 'all' || value === '' || value === 'false' || value === 'relevance') return false;
+                return true;
+              });
               return filterParams.length;
             })()})
           </button>
@@ -421,10 +429,10 @@ const SearchPage = () => {
           fontSize: '14px',
           color: '#6c757d'
         }}>
-          Showing {searchResults.length} of {pagination.totalItems} results 
+          Showing {searchResults.length} of {pagination.totalItems} results
           {searchQuery && ` for "${searchQuery}"`}
           {selectedCategory !== 'all' && ` in ${selectedCategory}`}
-          (Page {pagination.currentPage} of {pagination.totalPages})
+          {'\u00A0'}(Page {pagination.currentPage} of {pagination.totalPages})
         </div>
       )}
 
