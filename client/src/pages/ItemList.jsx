@@ -4,9 +4,13 @@ const ItemList = () => {
   const [items, setItems] = useState([]);
   const [page, setPage] = useState(1);
   const loaderRef = useRef(null);
+  const fetchedPages = useRef(new Set());
 
   useEffect(() => {
     const fetchItems = async () => {
+      if (fetchedPages.current.has(page)) return;
+      fetchedPages.current.add(page);
+
       try {
         const res = await fetch(`http://localhost:5000/api/items?page=${page}&limit=10`);
         const data = await res.json();
@@ -27,7 +31,6 @@ const ItemList = () => {
     });
 
     if (loaderRef.current) observer.observe(loaderRef.current);
-
     return () => observer.disconnect();
   }, []);
 
@@ -44,7 +47,7 @@ const ItemList = () => {
             <th>Category</th>
             <th>Promotion</th>
             <th>Deal Ends</th>
-            <th>Item image</th>
+            <th>Item Image</th>
           </tr>
         </thead>
         <tbody>
@@ -52,22 +55,26 @@ const ItemList = () => {
             <tr key={idx}>
               <td>{item.itemName}</td>
               <td>${item.price.toFixed(2)}</td>
-              <td>${item.originalPrice ? item.originalPrice.toFixed(2) : 'N/A'}</td>
-              <td>{item.store.name}</td>
-              <td>{item.unitDetails.quantity} {item.unitDetails.unit}</td>
-              <td>{item.category}</td>
-              <td>{item.promotion || 'N/A'}</td>
-              <td>{item.dealValidUntil ? new Date(item.dealValidUntil).toLocaleDateString() : 'N/A'}</td>
+              <td>{item.originalPrice ? `$${item.originalPrice.toFixed(2)}` : '—'}</td>
+              <td>{item.store?.name || '—'}</td>
+              <td>{item.unitDetails?.quantity} {item.unitDetails?.unit}</td>
+              <td>{item.category || '—'}</td>
+              <td>{item.promotion || '—'}</td>
+              <td>{item.dealValidUntil ? new Date(item.dealValidUntil).toLocaleDateString() : '—'}</td>
               <td>
-                {item.itemImage ? (
-                  <img src={item.itemImage.url} alt={item.itemImage.altText} style={{ width: '50px' }} />
-                ) : 'N/A'}
+                {item.itemImage?.url
+                  ? <img
+                      src={item.itemImage.url}
+                      alt={item.itemImage.altText || item.itemName}
+                      style={{ width: '50px' }}
+                    />
+                  : '—'}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-      <div ref={loaderRef} style={{ height: '30px' }} />
+      <div ref={loaderRef} style={{ height: '30px', marginBottom: '20px' }} />
     </>
   );
 };
