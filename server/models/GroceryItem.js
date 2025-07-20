@@ -96,6 +96,6 @@ groceryItemSchema.index({ 'store.name': 1 });
 groceryItemSchema.index({ category: 1 });
 groceryItemSchema.index({ createdAt: -1 });
 
-const GroceryItem = mongoose.model('GroceryItem', groceryItemSchema);
+const GroceryItem = mongoose.model('GroceryItem', groceryItemSchema, 'items');
 
 export default GroceryItem;

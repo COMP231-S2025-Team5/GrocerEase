@@ -1,17 +1,16 @@
 import express from 'express';
+import GroceryItem from '../models/GroceryItem.js'; // adjust the path
 
 const router = express.Router();
 
-// View item route - for viewing specific grocery items
-router.get('/:id', (req, res) => {
-  const { id } = req.params;
-  
-  // TODO: Implement actual item lookup with MongoDB
-  res.json({
-    message: 'Item details endpoint',
-    itemId: id,
-    item: null // Placeholder for item data
-  });
+router.get('/', async (req, res) => {
+  try {
+    const items = await GroceryItem.find(); // no populate
+    res.json(items);
+  } catch (error) {
+    console.error('Error fetching items:', error);
+    res.status(500).json({ error: 'Failed to retrieve items' });
+  }
 });
 
 export default router;

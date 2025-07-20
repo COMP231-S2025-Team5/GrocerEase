@@ -4,7 +4,7 @@ const ItemList = () => {
   const [items, setItems] = useState([]);
 
   useEffect(() => {
-    fetch('/items.json') // Make sure items.json is inside your public folder
+    fetch('http://localhost:5000/api/items')
       .then(res => res.json())
       .then(data => {
       console.log('Fetched items:', data);
