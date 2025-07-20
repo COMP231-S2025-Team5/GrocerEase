@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react';
 
-const GroceryItemTable = () => {
+const ItemList = () => {
   const [items, setItems] = useState([]);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/items') // change to your actual endpoint
+    fetch('/items.json') // Make sure items.json is inside your public folder
       .then(res => res.json())
-      .then(data => setItems(data))
-      .catch(err => console.error('Failed to fetch items:', err));
-  }, []);
+      .then(data => {
+      console.log('Fetched items:', data);
+      setItems(data);
+    })
+    .catch(err => console.error('Failed to fetch items:', err));
+}, []);
   return (
     <table style={{ borderCollapse: 'collapse', width: '100%', marginTop: '20px' }}>
       <thead>
@@ -21,10 +24,11 @@ const GroceryItemTable = () => {
           <th>Category</th>
           <th>Promotion</th>
           <th>Deal Ends</th>
+          <th>Item image</th>
         </tr>
       </thead>
       <tbody>
-        {items.map((item, idx) => (
+        {items?.map((item, idx) => (
           <tr key={idx}>
             <td>{item.itemName}</td>
             <td>${item.price.toFixed(2)}</td>
@@ -34,9 +38,14 @@ const GroceryItemTable = () => {
             <td>{item.category}</td>
             <td>{item.promotion || '—'}</td>
             <td>{item.dealValidUntil ? new Date(item.dealValidUntil).toLocaleDateString() : '—'}</td>
+            <td>{item.imageUrl
+                  ? <img src={item.imageUrl} alt={item.itemName} style={{ width: '60px' }} />
+                  : '—'}</td>
           </tr>
         ))}
       </tbody>
     </table>
   );
 };
+
+export default ItemList;
