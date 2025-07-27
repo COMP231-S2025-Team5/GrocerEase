@@ -1,11 +1,6 @@
 import mongoose from 'mongoose';
 
 const groceryListSchema = new mongoose.Schema({
-  listId: {
-    type: String,
-    unique: true,
-    trim: true,
-  },
   listName: {
     type: String,
     trim: true,
@@ -25,3 +20,7 @@ const groceryListSchema = new mongoose.Schema({
     required: false
   }
 });
+
+const GroceryList = mongoose.model('GroceryList', groceryListSchema, 'lists');
+
+export default GroceryList;

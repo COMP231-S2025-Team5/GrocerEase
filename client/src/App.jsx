@@ -6,6 +6,8 @@ import SearchPage from './pages/SearchPage';
 import ItemPage from './pages/ItemPage';
 import LoginPage from './pages/LoginPage';
 import ItemList from './pages/ItemList';
+import GroceryList from './pages/GroceryList';
+import GroceryListPage from './pages/GroceryListPage';
 import './App.css';
 
 function App() {
@@ -19,6 +21,8 @@ function App() {
           <Route path="/item/:id" element={<ItemPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/itemlist" element={<ItemList />} />
+          <Route path="/grocerylist" element={<GroceryList />} />
+          <Route path="/groceryList" element={<GroceryListPage />} />
         </Routes>
       </div>
     </Router>

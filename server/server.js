@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import searchRoutes from './routes/search.js';
 import itemRoutes from './routes/items.js';
 import authRoutes from './routes/auth.js';
+import groceryListRoutes from './routes/groceryList.js';
 
 // Load environment variables
 dotenv.config();
@@ -39,6 +40,7 @@ app.get('/', (req, res) => {
 app.use('/api/search', searchRoutes);
 app.use('/api/items', itemRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/grocery-lists', groceryListRoutes);
 
 // Connect to MongoDB
 const connectDB = async () => {
