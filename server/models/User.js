@@ -24,8 +24,41 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'admin'],
+    enum: ['user', 'employee', 'admin'],
     default: 'user'
+  },
+  // Employee-specific fields (S11-6: Employee can only change products at their store)
+  employeeDetails: {
+    storeId: {
+      type: String,
+      required: function() { return this.role === 'employee'; }
+    },
+    storeName: {
+      type: String,
+      required: function() { return this.role === 'employee'; }
+    },
+    storeLocation: {
+      type: String,
+      required: function() { return this.role === 'employee'; }
+    },
+    employeeId: {
+      type: String,
+      unique: true,
+      sparse: true // Only unique if present
+    },
+    department: {
+      type: String,
+      enum: ['general', 'produce', 'meat', 'dairy', 'bakery', 'pharmacy'],
+      default: 'general'
+    },
+    startDate: {
+      type: Date,
+      default: Date.now
+    },
+    isActive: {
+      type: Boolean,
+      default: true
+    }
   }
 }, {
   timestamps: true

@@ -8,6 +8,7 @@ import searchRoutes from './routes/search.js';
 import itemRoutes from './routes/items.js';
 import authRoutes from './routes/auth.js';
 import reportRoutes from './routes/reports.js';
+import employeeRoutes from './routes/employee.js';
 
 // Load environment variables
 dotenv.config();
@@ -31,7 +32,8 @@ app.get('/', (req, res) => {
       home: '/',
       search: '/api/search',
       item: '/api/item/:id',
-      login: '/api/auth/login'
+      login: '/api/auth/login',
+      employee: '/api/employee'
     }
   });
 });
@@ -41,6 +43,7 @@ app.use('/api/search', searchRoutes);
 app.use('/api/items', itemRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/employee', employeeRoutes);
 
 // Connect to MongoDB
 const connectDB = async () => {

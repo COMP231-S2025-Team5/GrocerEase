@@ -1,0 +1,113 @@
+### Employee Stock Management API Tests ###
+
+# Base URL for all requests
+@baseUrl = http://localhost:5000
+
+### 1. Employee Registration (Admin would typically do this)
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "John Employee",
+  "email": "john.employee@grocerease.com",
+  "password": "Employee123!",
+  "confirmPassword": "Employee123!",
+  "role": "employee",
+  "employeeDetails": {
+    "storeId": "STORE001",
+    "storeName": "Walmart",
+    "storeLocation": "Downtown",
+    "employeeId": "EMP001",
+    "department": "general"
+  }
+}
+
+### 2. Employee Login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "john.employee@grocerease.com",
+  "password": "Employee123!"
+}
+
+### 3. S11-1: Get products with filtering (Employee's store only)
+GET {{baseUrl}}/api/employee/products?category=fruits&stockStatus=in-stock&sortBy=itemName
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### 4. S11-1: Search products
+GET {{baseUrl}}/api/employee/products?q=apple&sortBy=price&sortOrder=asc
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### 5. S11-1: Filter by stock status
+GET {{baseUrl}}/api/employee/products?stockStatus=out-of-stock
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### 6. Get specific product details
+GET {{baseUrl}}/api/employee/products/PRODUCT_ID_HERE
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### 7. S11-2, S11-3, S11-4: Mark product as out of stock
+PATCH {{baseUrl}}/api/employee/products/PRODUCT_ID_HERE/stock-status
+Authorization: Bearer YOUR_TOKEN_HERE
+Content-Type: application/json
+
+{
+  "stockStatus": "out-of-stock",
+  "reason": "Empty shelves - no more inventory",
+  "stockCount": 0
+}
+
+### 8. S11-4: Update product to in-stock
+PATCH {{baseUrl}}/api/employee/products/PRODUCT_ID_HERE/stock-status
+Authorization: Bearer YOUR_TOKEN_HERE
+Content-Type: application/json
+
+{
+  "stockStatus": "in-stock",
+  "reason": "Restocked from warehouse",
+  "stockCount": 25
+}
+
+### 9. S11-4: Mark as low stock
+PATCH {{baseUrl}}/api/employee/products/PRODUCT_ID_HERE/stock-status
+Authorization: Bearer YOUR_TOKEN_HERE
+Content-Type: application/json
+
+{
+  "stockStatus": "low-stock",
+  "reason": "Only a few items left on shelf",
+  "stockCount": 3
+}
+
+### 10. S11-4: Discontinue product
+PATCH {{baseUrl}}/api/employee/products/PRODUCT_ID_HERE/stock-status
+Authorization: Bearer YOUR_TOKEN_HERE
+Content-Type: application/json
+
+{
+  "stockStatus": "discontinued",
+  "reason": "Product discontinued by manufacturer",
+  "stockCount": 0
+}
+
+### 11. Get product stock history
+GET {{baseUrl}}/api/employee/products/PRODUCT_ID_HERE/history
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### 12. Test unauthorized access (different store)
+# This should fail for employees trying to access products from other stores
+GET {{baseUrl}}/api/employee/products/OTHER_STORE_PRODUCT_ID
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### 13. Test pagination
+GET {{baseUrl}}/api/employee/products?page=1&limit=5
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### 14. Test sorting options
+GET {{baseUrl}}/api/employee/products?sortBy=stockCount&sortOrder=desc
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### 15. Test multiple filters
+GET {{baseUrl}}/api/employee/products?category=dairy&stockStatus=in-stock&q=milk&sortBy=price
+Authorization: Bearer YOUR_TOKEN_HERE
