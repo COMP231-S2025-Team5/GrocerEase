@@ -11,6 +11,7 @@ import ItemList from './pages/ItemList';
 import Dashboard from './pages/Dashboard';
 import EmployeePage from './pages/EmployeePage';
 import AccountPage from './pages/AccountPage';
+import AdminPage from './pages/AdminPage';
 import './App.css';
 
 function App() {
@@ -48,6 +49,14 @@ function App() {
                   <AccountPage />
                 </ProtectedRoute>
               } 
+            />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute>
+                  <AdminPage />
+                </ProtectedRoute>
+              }
             />
           </Routes>
         </div>

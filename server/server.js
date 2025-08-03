@@ -9,6 +9,7 @@ import itemRoutes from './routes/items.js';
 import authRoutes from './routes/auth.js';
 import reportRoutes from './routes/reports.js';
 import employeeRoutes from './routes/employee.js';
+import adminRoutes from './routes/admin.js';
 
 // Load environment variables
 dotenv.config();
@@ -44,6 +45,7 @@ app.use('/api/items', itemRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/employee', employeeRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Connect to MongoDB
 const connectDB = async () => {
