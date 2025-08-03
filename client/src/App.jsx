@@ -38,6 +38,10 @@ function App() {
               element={
                 <ProtectedRoute>
                   <EmployeePage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route
               path="/account" 
               element={
                 <ProtectedRoute>
