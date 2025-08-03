@@ -7,12 +7,17 @@ const groceryListSchema = new mongoose.Schema({
     maxlength: [100, 'List name cannot exceed 100 characters'],
     default: 'List 1'
   },
-  items: [
-    {
+  items: [{
+    item: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'GroceryItem',
       required: true
+    },
+    quantity: {
+      type: Number,
+      default: 1,
     }
+  }
   ],
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,

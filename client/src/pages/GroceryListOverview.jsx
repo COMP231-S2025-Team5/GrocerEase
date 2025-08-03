@@ -26,6 +26,28 @@ const GroceryListOverview = () => {
     navigate(`/groceryListPage/${listId}`);
   };
 
+  // Function to handle deleting a grocery list
+  const handleDeleteList = async (listId) => {
+    const confirm = window.confirm('Are you sure you want to delete this list?');
+    if (!confirm) return;
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/grocery-lists/${listId}`, {
+        method: 'DELETE',
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to delete list');
+      }
+
+      // Remove the deleted list from state
+      setLists(prev => prev.filter(list => list._id !== listId));
+    } catch (err) {
+      console.error('Error deleting list:', err);
+      alert('Could not delete the list.');
+    }
+  };
+
   return (
     <div style={{ padding: '20px' }}>
       <h2>Your Grocery Lists</h2>
@@ -44,6 +66,12 @@ const GroceryListOverview = () => {
                 style={{ marginLeft: '10px' }}
               >
                 Open
+              </button>
+              <button
+                onClick={() => handleDeleteList(list._id)}
+                style={{ marginLeft: '10px' }}
+              >
+                Delete
               </button>
             </li>
           ))}
