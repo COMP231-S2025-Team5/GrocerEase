@@ -84,22 +84,29 @@ const AccountPage = () => {
     return errors;
   };
 
-  const validatePasswordForm = (data) => {
-    const errors = {};
-    
-    if (!data.currentPassword) {
-      errors.currentPassword = 'Current password is required';
+  const validatePasswordForm = () => {
+    const newErrors = {};
+
+    if (!passwordFormData.currentPassword) {
+      newErrors.currentPassword = 'Current password is required';
     }
-    
-    if (!data.newPassword || data.newPassword.length < 6) {
-      errors.newPassword = 'New password must be at least 6 characters long';
+
+    if (!passwordFormData.newPassword) {
+      newErrors.newPassword = 'New password is required';
+    } else if (passwordFormData.newPassword.length < 6) {
+      newErrors.newPassword = 'Password must be at least 6 characters long';
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(passwordFormData.newPassword)) {
+      newErrors.newPassword = 'Password must contain at least one uppercase letter, one lowercase letter, and one number';
     }
-    
-    if (data.newPassword !== data.confirmPassword) {
-      errors.confirmPassword = 'Passwords do not match';
+
+    if (!passwordFormData.confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your new password';
+    } else if (passwordFormData.newPassword !== passwordFormData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
     }
-    
-    return errors;
+
+    setPasswordErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   // API functions
@@ -227,10 +234,8 @@ const AccountPage = () => {
 
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
-    const errors = validatePasswordForm(passwordFormData);
     
-    if (Object.keys(errors).length > 0) {
-      setPasswordErrors(errors);
+    if (!validatePasswordForm()) {
       return;
     }
 
@@ -741,10 +746,13 @@ const AccountPage = () => {
                   }}
                 />
                 {passwordErrors.newPassword && (
-                  <p style={{ color: '#dc3545', fontSize: '14px', marginTop: '4px', margin: '4px 0 0 0' }}>
+                  <p style={{ color: '#dc3545', fontSize: '14px', marginTop: '4px' }}>
                     {passwordErrors.newPassword}
                   </p>
                 )}
+                <p style={{ color: '#666', fontSize: '12px', marginTop: '4px' }}>
+                  Must contain at least 6 characters with uppercase, lowercase, and number
+                </p>
               </div>
 
               <div style={{ marginBottom: '25px' }}>
