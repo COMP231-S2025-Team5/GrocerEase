@@ -16,7 +16,8 @@ const Navigation = () => {
   const publicNavItems = [
     { path: '/', label: 'Home' },
     { path: '/search', label: 'Search' },
-    { path: '/itemlist', label: 'Browse Items' }
+    { path: '/itemlist', label: 'Browse Items' },
+    { path: '/groceryListOverview', label: 'Grocery List'}
   ];
 
   return (

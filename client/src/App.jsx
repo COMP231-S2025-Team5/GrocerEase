@@ -12,6 +12,8 @@ import Dashboard from './pages/Dashboard';
 import EmployeePage from './pages/EmployeePage';
 import AccountPage from './pages/AccountPage';
 import AdminPage from './pages/AdminPage';
+import GroceryListOverview from './pages/GroceryListOverview';
+import GroceryListPage from './pages/GroceryListPage';
 import './App.css';
 
 function App() {
@@ -58,7 +60,9 @@ function App() {
                 </ProtectedRoute>
               }
             />
-          </Routes>
+            <Route path="/groceryListOverview" element={<GroceryListOverview />} />
+          <Route path="/groceryListPage/:id" element={<GroceryListPage />} />
+        </Routes>
         </div>
       </AuthProvider>
     </Router>
