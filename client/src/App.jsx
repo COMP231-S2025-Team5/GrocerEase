@@ -9,6 +9,7 @@ import ItemPage from './pages/ItemPage';
 import LoginPage from './pages/LoginPage';
 import ItemList from './pages/ItemList';
 import Dashboard from './pages/Dashboard';
+import EmployeePage from './pages/EmployeePage';
 import AccountPage from './pages/AccountPage';
 import './App.css';
 
@@ -32,7 +33,11 @@ function App() {
                 </ProtectedRoute>
               } 
             />
-            <Route 
+            <Route
+              path="/employee" 
+              element={
+                <ProtectedRoute>
+                  <EmployeePage />
               path="/account" 
               element={
                 <ProtectedRoute>

@@ -74,6 +74,20 @@ const Navigation = () => {
                 Dashboard
               </Link>
               
+              {/* Employee Dashboard Link - Only for employees */}
+              {(user?.role === 'employee' || user?.role === 'admin') && (
+                <Link
+                  to="/employee"
+                  style={{
+                    color: 'blue',
+                    textDecoration: 'none',
+                    fontWeight: user?.role === 'employee' ? 'bold' : 'normal'
+                  }}
+                >
+                  Employee Dashboard
+                </Link>
+              )}
+              
               {/* User Menu */}
               <div style={{ position: 'relative' }}>
                 <button

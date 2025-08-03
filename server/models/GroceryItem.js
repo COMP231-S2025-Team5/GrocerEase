@@ -74,6 +74,33 @@ const groceryItemSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  // S11-4: Stock status tracking for out-of-stock functionality
+  stockStatus: {
+    type: String,
+    enum: ['in-stock', 'out-of-stock', 'low-stock', 'discontinued'],
+    default: 'in-stock'
+  },
+  stockCount: {
+    type: Number,
+    min: [0, 'Stock count cannot be negative'],
+    default: 0
+  },
+  // S11-4 & S11-5: Track employee actions for audit trail
+  lastStockUpdate: {
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    updatedAt: {
+      type: Date,
+      default: Date.now
+    },
+    previousStatus: String,
+    newStatus: String,
+    reason: String,
+    employeeName: String,
+    employeeId: String
+  },
   dealValidUntil: {
     type: Date
   }
