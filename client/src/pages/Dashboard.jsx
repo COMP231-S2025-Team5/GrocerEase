@@ -206,6 +206,72 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Account Management */}
+      <div style={{
+        backgroundColor: 'white',
+        borderRadius: '12px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        padding: '30px',
+        marginBottom: '30px',
+        border: '1px solid #e1e5e9'
+      }}>
+        <h2 style={{
+          color: '#333',
+          marginBottom: '20px',
+          fontSize: '1.5rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px'
+        }}>
+          ⚙️ Account Management
+        </h2>
+        
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: window.innerWidth > 768 ? 'repeat(2, 1fr)' : '1fr',
+          gap: '20px'
+        }}>
+          <Link
+            to="/account"
+            style={{
+              display: 'block',
+              padding: '20px',
+              backgroundColor: '#f8f9fa',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              textAlign: 'center',
+              border: '1px solid #dee2e6',
+              transition: 'transform 0.2s'
+            }}
+            onMouseOver={(e) => e.target.style.transform = 'translateY(-2px)'}
+            onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
+          >
+            <div style={{ fontSize: '2rem', marginBottom: '10px' }}>👤</div>
+            <h3 style={{ color: '#495057', margin: '0 0 8px 0' }}>Account Settings</h3>
+            <p style={{ color: '#666', margin: 0, fontSize: '14px' }}>
+              Edit profile, change password, manage account
+            </p>
+          </Link>
+
+          <div
+            style={{
+              padding: '20px',
+              backgroundColor: '#f0f9ff',
+              borderRadius: '8px',
+              textAlign: 'center',
+              border: '1px solid #c7d2fe',
+              opacity: 0.6
+            }}
+          >
+            <div style={{ fontSize: '2rem', marginBottom: '10px' }}>📊</div>
+            <h3 style={{ color: '#6b7280', margin: '0 0 8px 0' }}>Order History</h3>
+            <p style={{ color: '#666', margin: 0, fontSize: '14px' }}>
+              Coming soon...
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

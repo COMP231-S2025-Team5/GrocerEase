@@ -9,6 +9,7 @@ import ItemPage from './pages/ItemPage';
 import LoginPage from './pages/LoginPage';
 import ItemList from './pages/ItemList';
 import Dashboard from './pages/Dashboard';
+import AccountPage from './pages/AccountPage';
 import './App.css';
 
 function App() {
@@ -28,6 +29,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/account" 
+              element={
+                <ProtectedRoute>
+                  <AccountPage />
                 </ProtectedRoute>
               } 
             />

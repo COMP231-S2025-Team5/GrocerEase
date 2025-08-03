@@ -152,6 +152,21 @@ const Navigation = () => {
                       📊 Dashboard
                     </Link>
                     
+                    <Link
+                      to="/account"
+                      onClick={() => setShowUserMenu(false)}
+                      style={{
+                        display: 'block',
+                        padding: '12px 16px',
+                        textDecoration: 'none',
+                        color: '#333',
+                        fontSize: '14px',
+                        borderBottom: '1px solid #eee'
+                      }}
+                    >
+                      ⚙️ Account Settings
+                    </Link>
+                    
                     <button
                       onClick={handleLogout}
                       style={{
