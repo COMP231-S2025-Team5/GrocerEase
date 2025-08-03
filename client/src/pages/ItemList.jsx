@@ -6,31 +6,31 @@ const ItemList = () => {
   const loaderRef = useRef(null);
   const fetchedPages = useRef(new Set());
   
-  const handleAddToList = async (item) => {
-    try {
-      const listId = '64f3a9d123456789abcdef00'; // replace with actual listId
-  
-      const res = await fetch(`http://localhost:5000/api/grocery-lists/${listId}/add-item`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ itemId: item._id }),
-      });
-  
-      const data = await res.json();
-  
-      if (res.ok) {
-        alert(`Added "${item.itemName}" to your list.`);
-      } else {
-        console.error('Server responded with error:', data.message);
-        alert(`Error: ${data.message}`);
-      }
-    } catch (err) {
-      console.error('Add to list failed:', err);
-      alert('Failed to add item to list.');
+const handleAddToList = async (item) => {
+  try {
+    const userId = '688f89f255330171c2a751a5'; // Replace with actual user ID
+
+    const res = await fetch(`http://localhost:5000/api/grocery-lists/user/${userId}/add-item`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ itemId: item._id }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      alert(`Added "${item.itemName}" to your list.`);
+    } else {
+      console.error('Server responded with error:', data.message);
+      alert(`Error: ${data.message}`);
     }
-  };
+  } catch (err) {
+    console.error('Add to list failed:', err);
+    alert('Failed to add item to list.');
+  }
+};
 
   useEffect(() => {
     const fetchItems = async () => {

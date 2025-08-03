@@ -1,55 +1,57 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 
 const GroceryListPage = () => {
-  const [lists, setLists] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { id } = useParams(); // Get the list ID from the URL
+  const [items, setItems] = useState([]); // Store grocery items
+  const [loading, setLoading] = useState(true); // Optional: loading state
+  const [error, setError] = useState(null); // Optional: error state
 
-  const fetchLists = async () => {
-    try {
-      const res = await fetch('http://localhost:5000/api/grocery-lists');
-      const data = await res.json();
-      setLists(data);
-    } catch (err) {
-      console.error('Failed to fetch lists:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const createNewList = async () => {
-    try {
-      const res = await fetch('http://localhost:5000/api/grocery-lists', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      const data = await res.json();
-      setLists(prev => [...prev, data]);
-    } catch (err) {
-      console.error('Error creating list:', err);
-      alert('Failed to create list');
-    }
-  };
-
+  // Fetch items when component mounts or listId changes
   useEffect(() => {
-    fetchLists();
-  }, []);
+    fetch(`/api/grocery-lists/${id}/items`)
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch items');
+        return res.json();
+      })
+      .then(data => {
+        setItems(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, [id]);
 
+  // Remove item from list
+  const handleRemove = (itemId) => {
+    fetch(`/api/items/${itemId}`, { method: 'DELETE' })
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to delete item');
+        setItems(prev => prev.filter(item => item.id !== itemId));
+      })
+      .catch(err => {
+        alert('Error removing item: ' + err.message);
+      });
+  };
+
+  // Render loading or error
+  if (loading) return <p>Loading items...</p>;
+  if (error) return <p>Error: {error}</p>;
+
+  // Render grocery list
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>Grocery Lists</h2>
-      <button onClick={createNewList} style={{ marginBottom: '20px' }}>
-        + Create New List
-      </button>
-
-      {loading ? (
-        <p>Loading lists...</p>
-      ) : lists.length === 0 ? (
-        <p>No lists found. Create your first one!</p>
+    <div>
+      <h2>Grocery List</h2>
+      {items.length === 0 ? (
+        <p>No items in this list.</p>
       ) : (
         <ul>
-          {lists.map(list => (
-            <li key={list._id}>
-              <strong>{list.listName}</strong> — {list.items.length} items
+          {items.map(item => (
+            <li key={item.id}>
+              {item.name}
+              <button onClick={() => handleRemove(item.id)}>Remove</button>
             </li>
           ))}
         </ul>

@@ -6,7 +6,7 @@ import SearchPage from './pages/SearchPage';
 import ItemPage from './pages/ItemPage';
 import LoginPage from './pages/LoginPage';
 import ItemList from './pages/ItemList';
-import GroceryList from './pages/GroceryList';
+import GroceryListOverview from './pages/GroceryListOverview';
 import GroceryListPage from './pages/GroceryListPage';
 import './App.css';
 
@@ -21,8 +21,8 @@ function App() {
           <Route path="/item/:id" element={<ItemPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/itemlist" element={<ItemList />} />
-          <Route path="/grocerylist" element={<GroceryList />} />
-          <Route path="/groceryList" element={<GroceryListPage />} />
+          <Route path="/groceryListOverview" element={<GroceryListOverview />} />
+          <Route path="/groceryListPage/:id" element={<GroceryListPage />} />
         </Routes>
       </div>
     </Router>
