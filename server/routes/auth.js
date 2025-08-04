@@ -86,7 +86,6 @@ router.post('/register', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Registration error:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error. Please try again.'
@@ -144,7 +143,6 @@ router.post('/login', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Login error:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error. Please try again.'
@@ -176,7 +174,6 @@ router.get('/profile', auth, async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Profile fetch error:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error'
@@ -265,7 +262,6 @@ router.put('/update-profile', auth, async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Profile update error:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error'
@@ -320,7 +316,6 @@ router.put('/change-password', auth, async (req, res) => {
       message: 'Password changed successfully'
     });
   } catch (error) {
-    console.error('Password change error:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error'
@@ -350,7 +345,6 @@ router.delete('/delete-account', auth, async (req, res) => {
       message: 'Account deleted successfully'
     });
   } catch (error) {
-    console.error('Account deletion error:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error'

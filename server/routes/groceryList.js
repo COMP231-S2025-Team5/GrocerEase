@@ -1,6 +1,5 @@
 import express from 'express';
 import GroceryList from '../models/GroceryList.js';
-import GroceryItem from '../models/GroceryItem.js';
 import auth from '../middleware/auth.js';
 
 const router = express.Router();
@@ -24,14 +23,12 @@ router.get('/:listId', auth, async (req, res) => {
   const { listId } = req.params;
 
   try {
-    // Verify the list belongs to the user and populate all item fields
     const list = await GroceryList.findOne({ _id: listId, createdBy: req.user.userId })
       .populate('items.item');
     if (!list) {
       return res.status(404).json({ success: false, message: 'Grocery list not found' });
     }
 
-    console.log('List found with items:', JSON.stringify(list.items, null, 2)); // Debug log
     res.status(200).json({ success: true, list });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Failed to fetch list', error: err.message });
@@ -42,8 +39,6 @@ router.get('/:listId', auth, async (req, res) => {
 router.post('/:listId/items', auth, async (req, res) => {
   const { listId } = req.params;
   const { itemId, itemName, price, store } = req.body;
-
-  console.log('Adding item to list:', { itemId, itemName, price, store }); // Debug log
 
   try {
     // Verify the list belongs to the user
@@ -56,11 +51,9 @@ router.post('/:listId/items', auth, async (req, res) => {
     const existingItem = list.items.find(item => item.item.toString() === itemId);
     if (existingItem) {
       existingItem.quantity += 1;
-      // Update the item data to ensure it has the latest information
       existingItem.itemName = itemName;
       existingItem.price = price;
       existingItem.store = store;
-      console.log('Updated existing item:', existingItem); // Debug log
     } else {
       const newItem = {
         item: itemId,
@@ -69,19 +62,16 @@ router.post('/:listId/items', auth, async (req, res) => {
         price: price,
         store: store
       };
-      console.log('Adding new item:', newItem); // Debug log
       list.items.push(newItem);
     }
 
     await list.save();
-    console.log('List saved. Items:', list.items); // Debug log
     res.status(200).json({ 
       success: true, 
       message: existingItem ? 'Item quantity updated' : 'Item added to list',
       list 
     });
   } catch (err) {
-    console.error('Error adding item to list:', err);
     res.status(500).json({ success: false, message: 'Failed to add item to list', error: err.message });
   }
 });
@@ -144,58 +134,6 @@ router.delete('/:listId/remove-item/:itemId', auth, async (req, res) => {
     res.status(200).json({ success: true, message: 'Item removed from list' });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Failed to remove item', error: err.message });
-  }
-});
-
-
-// POST /api/grocery-lists/user/:userId/add-item - Legacy route (deprecated)
-// This route is deprecated in favor of the protected route above
-router.post('/user/:userId/add-item', async (req, res) => {
-  const { userId } = req.params;
-  const { itemId, itemName, price, store } = req.body;
-
-  try {
-    const item = await GroceryItem.findById(itemId);
-    if (!item) return res.status(404).json({ message: 'Item not found' });
-
-    let list = await GroceryList.findOne({ createdBy: userId });
-
-    if (!list) {
-      list = new GroceryList({
-        listName: 'My Grocery List',
-        createdBy: userId,
-        items: [{
-          item: itemId,
-          quantity: 1,
-          itemName: itemName || item.itemName,
-          price: price || item.price,
-          store: store || item.store?.name || ''
-        }]
-      });
-    } else {
-      const existing = list.items.find(i => i.item.toString() === itemId);
-      if (existing) {
-        existing.quantity += 1;
-        // Update with proper data
-        existing.itemName = itemName || item.itemName;
-        existing.price = price || item.price;
-        existing.store = store || item.store?.name || '';
-      } else {
-        list.items.push({
-          item: itemId,
-          quantity: 1,
-          itemName: itemName || item.itemName,
-          price: price || item.price,
-          store: store || item.store?.name || ''
-        });
-      }
-    }
-
-    await list.save();
-    res.status(200).json({ message: 'Item added/updated', list });
-  } catch (err) {
-    console.error('Error adding item:', err);
-    res.status(500).json({ message: 'Server error', error: err.message });
   }
 });
 

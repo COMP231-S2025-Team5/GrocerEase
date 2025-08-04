@@ -32,7 +32,6 @@ const requireEmployee = async (req, res, next) => {
     req.employee = employee;
     next();
   } catch (error) {
-    console.error('Employee middleware error:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error'
@@ -127,7 +126,6 @@ router.get('/products', auth, requireEmployee, async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Employee products fetch error:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching products',
@@ -227,9 +225,6 @@ router.patch('/products/:productId/stock-status', auth, requireEmployee, async (
     });
 
   } catch (error) {
-    console.error('Stock status update error:', error);
-    
-    // S11-5: Error handling
     let errorMessage = 'Failed to update stock status';
     if (error.name === 'ValidationError') {
       errorMessage = 'Invalid data provided';
@@ -273,7 +268,6 @@ router.get('/products/:productId', auth, requireEmployee, async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Product fetch error:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching product details',
@@ -318,7 +312,6 @@ router.get('/products/:productId/history', auth, requireEmployee, async (req, re
     });
 
   } catch (error) {
-    console.error('Product history error:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching product history'

@@ -29,14 +29,12 @@ const GroceryListPage = () => {
         const data = await res.json();
         if (data.success) {
           setListName(data.list.listName);
-          console.log('Grocery list data:', data.list.items); // Debug log
           setItems(data.list.items);
         } else {
           throw new Error(data.message);
         }
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching list data:', err);
         setError(err.message);
         setLoading(false);
       }
@@ -91,7 +89,6 @@ const GroceryListPage = () => {
         )
       );
     } catch (err) {
-      console.error('Error updating quantity:', err);
       alert('Could not update quantity.');
     }
   };
@@ -267,10 +264,6 @@ const GroceryListPage = () => {
               </thead>
               <tbody>
                 {getSortedItems().map((listItem, idx) => {
-                  console.log('Processing list item:', listItem); // Debug log
-                  console.log('List item price:', listItem.price); // Debug price
-                  console.log('List item store:', listItem.store); // Debug store
-                  console.log('Populated item:', listItem.item); // Debug populated item
                   const { item, quantity } = listItem;
                   return (
                   <tr key={idx} style={{ borderBottom: '1px solid #eee' }}>

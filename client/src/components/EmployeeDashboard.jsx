@@ -66,7 +66,6 @@ const EmployeeDashboard = () => {
       }
     } catch (err) {
       setError('Network error. Please try again.');
-      console.error('Fetch products error:', err);
     } finally {
       setLoading(false);
     }
@@ -135,7 +134,6 @@ const EmployeeDashboard = () => {
       }
     } catch (err) {
       setError('Network error. Please try again.');
-      console.error('Stock update error:', err);
     } finally {
       setLoading(false);
     }

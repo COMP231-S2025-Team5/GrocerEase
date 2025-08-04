@@ -42,7 +42,6 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
       }
     } catch (error) {
-      console.error('Error fetching user profile:', error);
       localStorage.removeItem('grocerease_token');
       setToken(null);
       setUser(null);
@@ -72,7 +71,6 @@ export const AuthProvider = ({ children }) => {
         return { success: false, message: data.message };
       }
     } catch (error) {
-      console.error('Login error:', error);
       return { success: false, message: 'Network error. Please try again.' };
     }
   };
@@ -98,7 +96,6 @@ export const AuthProvider = ({ children }) => {
         return { success: false, message: data.message };
       }
     } catch (error) {
-      console.error('Registration error:', error);
       return { success: false, message: 'Network error. Please try again.' };
     }
   };
