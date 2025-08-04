@@ -29,17 +29,23 @@ const userSchema = new mongoose.Schema({
   },
   // Employee-specific fields (S11-6: Employee can only change products at their store)
   employeeDetails: {
+    store: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Store',
+      required: function() { return this.role === 'employee'; }
+    },
+    // Keep legacy fields for backward compatibility (will be deprecated)
     storeId: {
       type: String,
-      required: function() { return this.role === 'employee'; }
+      required: false
     },
     storeName: {
       type: String,
-      required: function() { return this.role === 'employee'; }
+      required: false
     },
     storeLocation: {
       type: String,
-      required: function() { return this.role === 'employee'; }
+      required: false
     },
     employeeId: {
       type: String,

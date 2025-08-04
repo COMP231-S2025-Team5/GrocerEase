@@ -1,6 +1,6 @@
 /**
  * Employee Dashboard Component
- * Implements S11-1 to S11-6: Employee stock management functionality
+ * Modern, user-friendly interface for employee stock management
  */
 
 import React, { useState, useEffect } from 'react';
@@ -35,6 +35,7 @@ const EmployeeDashboard = () => {
     reason: '',
     stockCount: ''
   });
+  const [storeInfo, setStoreInfo] = useState(null);
 
   // S11-1: Fetch products with sorting and filtering
   const fetchProducts = async (page = 1) => {
@@ -61,6 +62,7 @@ const EmployeeDashboard = () => {
         setProducts(data.data.products);
         setPagination(data.data.pagination);
         setAvailableFilters(data.data.filters);
+        setStoreInfo(data.data.employeeStore);
       } else {
         setError(data.message || 'Failed to fetch products');
       }
@@ -193,7 +195,7 @@ const EmployeeDashboard = () => {
       fontSize: '12px',
       fontWeight: 'bold'
     }}>
-      {status.toUpperCase()}
+      {status ? status.toUpperCase() : 'UNKNOWN'}
     </span>
   );
 
@@ -207,27 +209,111 @@ const EmployeeDashboard = () => {
   }
 
   return (
-    <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-      <div style={{ marginBottom: '20px' }}>
-        <h1>Employee Dashboard</h1>
-        <p>Welcome, {user.name}! Manage your store's inventory below.</p>
-        {user.employeeDetails && (
-          <p style={{ color: '#666', fontSize: '14px' }}>
-            Store: {user.employeeDetails.storeName} - {user.employeeDetails.storeLocation}
-          </p>
-        )}
+    <div style={{
+      maxWidth: '1400px',
+      margin: '0 auto',
+      padding: '20px',
+      backgroundColor: '#f8f9fa',
+      minHeight: 'calc(100vh - 60px)'
+    }}>
+      
+      {/* Store Information Header */}
+      <div style={{
+        backgroundColor: 'white',
+        borderRadius: '12px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        padding: '30px',
+        marginBottom: '30px',
+        border: '1px solid #e1e5e9'
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '20px'
+        }}>
+          <div>
+            <h1 style={{
+              color: '#333',
+              marginBottom: '10px',
+              fontSize: '2.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '15px'
+            }}>
+              👷 Employee Dashboard
+            </h1>
+            <p style={{
+              color: '#666',
+              fontSize: '1.1rem',
+              margin: '0 0 10px 0'
+            }}>
+              Welcome back, <strong>{user.name}</strong>!
+            </p>
+            {user.employeeDetails && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                backgroundColor: '#e3f2fd',
+                padding: '10px 15px',
+                borderRadius: '8px',
+                border: '1px solid #bbdefb'
+              }}>
+                <span style={{ fontSize: '1.2rem' }}>🏪</span>
+                <div>
+                  <strong style={{ color: '#1976d2' }}>
+                    {storeInfo?.name || user.employeeDetails?.storeName || 'Store Name'}
+                  </strong>
+                  <span style={{ color: '#666', marginLeft: '10px' }}>
+                    📍 {storeInfo?.location || user.employeeDetails?.storeLocation || 'Location'}
+                  </span>
+                  {storeInfo && (
+                    <div style={{ fontSize: '12px', color: '#888', marginTop: '5px' }}>
+                      Showing products from your assigned store only
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* Quick Stats */}
+          <div style={{
+            display: 'flex',
+            gap: '15px',
+            flexWrap: 'wrap'
+          }}>
+            <div style={{
+              backgroundColor: '#e8f5e8',
+              padding: '15px',
+              borderRadius: '8px',
+              textAlign: 'center',
+              minWidth: '120px',
+              border: '1px solid #c8e6c9'
+            }}>
+              <div style={{ fontSize: '1.5rem', color: '#2e7d32' }}>📦</div>
+              <div style={{ fontWeight: 'bold', color: '#2e7d32' }}>{pagination.totalItems}</div>
+              <div style={{ fontSize: '12px', color: '#666' }}>Total Products</div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* S11-5: Success/Error Messages */}
+      {/* Success/Error Messages */}
       {error && (
         <div style={{
           backgroundColor: '#f8d7da',
           color: '#721c24',
-          padding: '10px',
-          borderRadius: '4px',
-          marginBottom: '20px'
+          border: '1px solid #f5c6cb',
+          borderRadius: '8px',
+          padding: '15px',
+          marginBottom: '20px',
+          fontSize: '14px',
+          fontWeight: '500'
         }}>
-          {error}
+          ❌ {error}
         </div>
       )}
 
@@ -235,43 +321,82 @@ const EmployeeDashboard = () => {
         <div style={{
           backgroundColor: '#d4edda',
           color: '#155724',
-          padding: '10px',
-          borderRadius: '4px',
-          marginBottom: '20px'
+          border: '1px solid #c3e6cb',
+          borderRadius: '8px',
+          padding: '15px',
+          marginBottom: '20px',
+          fontSize: '14px',
+          fontWeight: '500'
         }}>
-          {success}
+          ✅ {success}
         </div>
       )}
 
-      {/* S11-1: Filters and Search */}
+      {/* Modern Filters and Search */}
       <div style={{
-        backgroundColor: '#f8f9fa',
-        padding: '20px',
-        borderRadius: '8px',
-        marginBottom: '20px'
+        backgroundColor: 'white',
+        borderRadius: '12px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        padding: '25px',
+        marginBottom: '25px',
+        border: '1px solid #e1e5e9'
       }}>
-        <h3>Search & Filter Products</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+        <h3 style={{
+          color: '#333',
+          marginBottom: '20px',
+          fontSize: '1.3rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px'
+        }}>
+          Search & Filter Products
+        </h3>
+        
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '20px',
+          alignItems: 'end'
+        }}>
           <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+            <label style={{
+              display: 'block',
+              marginBottom: '8px',
+              fontWeight: '600',
+              color: '#333',
+              fontSize: '14px'
+            }}>
               Search Products
             </label>
             <input
               type="text"
               value={filters.q}
               onChange={(e) => handleFilterChange('q', e.target.value)}
-              placeholder="Search by name..."
+              placeholder="Search by product name..."
               style={{
                 width: '100%',
-                padding: '8px',
-                border: '1px solid #ddd',
-                borderRadius: '4px'
+                padding: '12px 16px',
+                border: '2px solid #e1e5e9',
+                borderRadius: '8px',
+                fontSize: '14px',
+                transition: 'border-color 0.2s',
+                outline: 'none',
+                backgroundColor: 'white',
+                color: '#333'
               }}
+              onFocus={(e) => e.target.style.borderColor = '#007bff'}
+              onBlur={(e) => e.target.style.borderColor = '#e1e5e9'}
             />
           </div>
 
           <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+            <label style={{
+              display: 'block',
+              marginBottom: '8px',
+              fontWeight: '600',
+              color: '#333',
+              fontSize: '14px'
+            }}>
               Category
             </label>
             <select
@@ -279,20 +404,32 @@ const EmployeeDashboard = () => {
               onChange={(e) => handleFilterChange('category', e.target.value)}
               style={{
                 width: '100%',
-                padding: '8px',
-                border: '1px solid #ddd',
-                borderRadius: '4px'
+                padding: '12px 16px',
+                border: '2px solid #e1e5e9',
+                borderRadius: '8px',
+                fontSize: '14px',
+                backgroundColor: 'white',
+                color: '#333',
+                cursor: 'pointer'
               }}
             >
               <option value="all">All Categories</option>
               {availableFilters.categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
+                <option key={cat} value={cat} style={{ color: '#333', backgroundColor: 'white' }}>
+                  {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                </option>
               ))}
             </select>
           </div>
 
           <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+            <label style={{
+              display: 'block',
+              marginBottom: '8px',
+              fontWeight: '600',
+              color: '#333',
+              fontSize: '14px'
+            }}>
               Stock Status
             </label>
             <select
@@ -300,20 +437,32 @@ const EmployeeDashboard = () => {
               onChange={(e) => handleFilterChange('stockStatus', e.target.value)}
               style={{
                 width: '100%',
-                padding: '8px',
-                border: '1px solid #ddd',
-                borderRadius: '4px'
+                padding: '12px 16px',
+                border: '2px solid #e1e5e9',
+                borderRadius: '8px',
+                fontSize: '14px',
+                backgroundColor: 'white',
+                color: '#333',
+                cursor: 'pointer'
               }}
             >
               <option value="all">All Status</option>
               {availableFilters.stockStatuses.map(status => (
-                <option key={status} value={status}>{status}</option>
+                <option key={status} value={status} style={{ color: '#333', backgroundColor: 'white' }}>
+                  {status.charAt(0).toUpperCase() + status.slice(1).replace('-', ' ')}
+                </option>
               ))}
             </select>
           </div>
 
           <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+            <label style={{
+              display: 'block',
+              marginBottom: '8px',
+              fontWeight: '600',
+              color: '#333',
+              fontSize: '14px'
+            }}>
               Sort By
             </label>
             <select
@@ -321,16 +470,48 @@ const EmployeeDashboard = () => {
               onChange={(e) => handleFilterChange('sortBy', e.target.value)}
               style={{
                 width: '100%',
-                padding: '8px',
-                border: '1px solid #ddd',
-                borderRadius: '4px'
+                padding: '12px 16px',
+                border: '2px solid #e1e5e9',
+                borderRadius: '8px',
+                fontSize: '14px',
+                backgroundColor: 'white',
+                color: '#333',
+                cursor: 'pointer'
               }}
             >
-              <option value="itemName">Product Name</option>
-              <option value="price">Price</option>
-              <option value="category">Category</option>
-              <option value="stockStatus">Stock Status</option>
-              <option value="stockCount">Stock Count</option>
+              <option value="itemName" style={{ color: '#333', backgroundColor: 'white' }}>📝 Name</option>
+              <option value="category" style={{ color: '#333', backgroundColor: 'white' }}>📂 Category</option>
+              <option value="price" style={{ color: '#333', backgroundColor: 'white' }}>💰 Price</option>
+              <option value="stockStatus" style={{ color: '#333', backgroundColor: 'white' }}>📊 Stock Status</option>
+            </select>
+          </div>
+
+          <div>
+            <label style={{
+              display: 'block',
+              marginBottom: '8px',
+              fontWeight: '600',
+              color: '#333',
+              fontSize: '14px'
+            }}>
+              Order
+            </label>
+            <select
+              value={filters.sortOrder}
+              onChange={(e) => handleFilterChange('sortOrder', e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                border: '2px solid #e1e5e9',
+                borderRadius: '8px',
+                fontSize: '14px',
+                backgroundColor: 'white',
+                color: '#333',
+                cursor: 'pointer'
+              }}
+            >
+              <option value="asc" style={{ color: '#333', backgroundColor: 'white' }}>⬆️ Ascending</option>
+              <option value="desc" style={{ color: '#333', backgroundColor: 'white' }}>⬇️ Descending</option>
             </select>
           </div>
         </div>
@@ -344,7 +525,32 @@ const EmployeeDashboard = () => {
       ) : (
         <>
           <div style={{ marginBottom: '20px' }}>
-            <h3>Products ({pagination.totalItems} total)</h3>
+            <h3 style={{ 
+              color: '#333', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '10px',
+              fontSize: '1.4rem'
+            }}>
+              🛒 Store Inventory
+              <span style={{ 
+                fontSize: '1rem', 
+                color: '#666', 
+                fontWeight: 'normal' 
+              }}>
+                ({pagination.totalItems} products{storeInfo?.name ? ` at ${storeInfo.name}` : ''})
+              </span>
+            </h3>
+            {storeInfo && (
+              <p style={{ 
+                color: '#666', 
+                fontSize: '14px', 
+                margin: '5px 0 0 0',
+                fontStyle: 'italic'
+              }}>
+                You can only view and manage products from your assigned store: <strong>{storeInfo.name}</strong>
+              </p>
+            )}
           </div>
 
           <div style={{ display: 'grid', gap: '15px' }}>

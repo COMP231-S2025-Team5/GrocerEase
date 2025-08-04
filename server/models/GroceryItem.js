@@ -21,7 +21,13 @@ const groceryItemSchema = new mongoose.Schema({
     trim: true,
     maxlength: [200, 'Promotion description cannot exceed 200 characters']
   },
-  store: { // TODO: Add store schema
+  store: {
+    // New store reference
+    _id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Store'
+    },
+    // Keep legacy embedded store data for backward compatibility
     name: {
       type: String,
       required: [true, 'Store name is required'],

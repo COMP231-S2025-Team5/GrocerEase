@@ -6,6 +6,7 @@
 import express from 'express';
 import GroceryItem from '../models/GroceryItem.js';
 import User from '../models/User.js';
+import Store from '../models/Store.js';
 import auth from '../middleware/auth.js';
 
 const router = express.Router();
@@ -53,9 +54,26 @@ router.get('/products', auth, requireEmployee, async (req, res) => {
     } = req.query;
 
     // S11-6: Employee can only see products from their store
-    const storeFilter = req.employee.role === 'admin' 
-      ? {} 
-      : { 'store.name': req.employee.employeeDetails.storeName };
+    // Support both new Store reference and legacy embedded store data
+    let storeFilter = {};
+    
+    if (req.employee.role !== 'admin') {
+      // Try to use new Store reference first
+      if (req.employee.employeeDetails?.store) {
+        const employeeStore = await Store.findById(req.employee.employeeDetails.store);
+        if (employeeStore) {
+          storeFilter = {
+            $or: [
+              { 'store._id': req.employee.employeeDetails.store },
+              { 'store.name': employeeStore.name }
+            ]
+          };
+        }
+      } else if (req.employee.employeeDetails?.storeName) {
+        // Fallback to legacy embedded store name
+        storeFilter = { 'store.name': req.employee.employeeDetails.storeName };
+      }
+    }
 
     // Build filter query
     const filterQuery = { ...storeFilter };
@@ -159,12 +177,25 @@ router.patch('/products/:productId/stock-status', auth, requireEmployee, async (
     }
 
     // S11-6: Check if employee can modify this product (same store)
-    if (req.employee.role !== 'admin' && 
-        product.store.name !== req.employee.employeeDetails.storeName) {
-      return res.status(403).json({
-        success: false,
-        message: 'You can only modify products from your assigned store'
-      });
+    if (req.employee.role !== 'admin') {
+      let canModify = false;
+      
+      // Check with new Store reference
+      if (req.employee.employeeDetails?.store && product.store._id) {
+        canModify = product.store._id.toString() === req.employee.employeeDetails.store.toString();
+      }
+      
+      // Fallback to legacy store name comparison
+      if (!canModify && req.employee.employeeDetails?.storeName && product.store.name) {
+        canModify = product.store.name === req.employee.employeeDetails.storeName;
+      }
+      
+      if (!canModify) {
+        return res.status(403).json({
+          success: false,
+          message: 'You can only modify products from your assigned store'
+        });
+      }
     }
 
     // Store previous status for audit trail

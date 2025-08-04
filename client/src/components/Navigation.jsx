@@ -47,9 +47,8 @@ const Navigation = () => {
 
         {/* Navigation Links */}
         <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          {/* Show different navigation based on user role */}
-          {isAuthenticated && user?.role === 'admin' ? (
-            /* Admin Navigation - Only Admin Panel */
+          {/* Admin: Only Admin Panel */}
+          {isAuthenticated && user?.role === 'admin' && (
             <Link
               to="/admin"
               style={{
@@ -65,61 +64,34 @@ const Navigation = () => {
             >
               🛡️ Admin Panel
             </Link>
-          ) : (
-            /* Regular User Navigation */
+          )}
+          {/* Employee: Only Employee Dashboard */}
+          {isAuthenticated && user?.role === 'employee' && (
+            <Link
+              to="/employee"
+              style={{
+                color: 'blue',
+                textDecoration: 'none',
+                fontWeight: 'bold'
+              }}
+            >
+              Employee Dashboard
+            </Link>
+          )}
+          {/* Regular user: All normal links */}
+          {isAuthenticated && user?.role !== 'admin' && user?.role !== 'employee' && (
             <>
-              {/* Public Navigation Links */}
               {publicNavItems.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
-                  style={{
-                    color: 'blue',
-                    textDecoration: 'none'
-                  }}
+                  style={{ color: 'blue', textDecoration: 'none' }}
                 >
                   {item.label}
                 </Link>
               ))}
-
-              {/* Authentication-based Navigation */}
-              {isAuthenticated && (
-                <>
-                  <Link
-                    to="/dashboard"
-                    style={{
-                      color: 'blue',
-                      textDecoration: 'none'
-                    }}
-                  >
-                    Dashboard
-                  </Link>
-                  
-                  <Link
-                    to="/groceryListOverview"
-                    style={{
-                      color: 'blue',
-                      textDecoration: 'none'
-                    }}
-                  >
-                    My Lists
-                  </Link>
-                  
-                  {/* Employee Dashboard Link - Only for employees */}
-                  {user?.role === 'employee' && (
-                    <Link
-                      to="/employee"
-                      style={{
-                        color: 'blue',
-                        textDecoration: 'none',
-                        fontWeight: 'bold'
-                      }}
-                    >
-                      Employee Dashboard
-                    </Link>
-                  )}
-                </>
-              )}
+              <Link to="/dashboard" style={{ color: 'blue', textDecoration: 'none' }}>Dashboard</Link>
+              <Link to="/groceryListOverview" style={{ color: 'blue', textDecoration: 'none' }}>My Lists</Link>
             </>
           )}
 
@@ -187,111 +159,38 @@ const Navigation = () => {
                     </div>
                   </div>
                   
-                  {/* Show all navigation links in dropdown for admin */}
+                  {/* Admin: all normal user links except Employee Dashboard */}
                   {user?.role === 'admin' && (
                     <>
-                      <Link
-                        to="/"
-                        onClick={() => setShowUserMenu(false)}
-                        style={{
-                          display: 'block',
-                          padding: '12px 16px',
-                          textDecoration: 'none',
-                          color: '#333',
-                          fontSize: '14px',
-                          borderBottom: '1px solid #eee'
-                        }}
-                      >
-                        🏠 Home
-                      </Link>
-                      <Link
-                        to="/search"
-                        onClick={() => setShowUserMenu(false)}
-                        style={{
-                          display: 'block',
-                          padding: '12px 16px',
-                          textDecoration: 'none',
-                          color: '#333',
-                          fontSize: '14px',
-                          borderBottom: '1px solid #eee'
-                        }}
-                      >
-                        🔍 Search
-                      </Link>
-                      <Link
-                        to="/itemlist"
-                        onClick={() => setShowUserMenu(false)}
-                        style={{
-                          display: 'block',
-                          padding: '12px 16px',
-                          textDecoration: 'none',
-                          color: '#333',
-                          fontSize: '14px',
-                          borderBottom: '1px solid #eee'
-                        }}
-                      >
-                        📋 Browse Items
-                      </Link>
-                      <Link
-                        to="/groceryListOverview"
-                        onClick={() => setShowUserMenu(false)}
-                        style={{
-                          display: 'block',
-                          padding: '12px 16px',
-                          textDecoration: 'none',
-                          color: '#333',
-                          fontSize: '14px',
-                          borderBottom: '1px solid #eee'
-                        }}
-                      >
-                        🛒 My Lists
-                      </Link>
-                      <Link
-                        to="/employee"
-                        onClick={() => setShowUserMenu(false)}
-                        style={{
-                          display: 'block',
-                          padding: '12px 16px',
-                          textDecoration: 'none',
-                          color: '#333',
-                          fontSize: '14px',
-                          borderBottom: '1px solid #eee'
-                        }}
-                      >
-                        👷 Employee Dashboard
-                      </Link>
+                      <Link to="/" onClick={() => setShowUserMenu(false)} style={{ display: 'block', padding: '12px 16px', textDecoration: 'none', color: '#333', fontSize: '14px', borderBottom: '1px solid #eee' }}>🏠 Home</Link>
+                      <Link to="/search" onClick={() => setShowUserMenu(false)} style={{ display: 'block', padding: '12px 16px', textDecoration: 'none', color: '#333', fontSize: '14px', borderBottom: '1px solid #eee' }}>🔍 Search</Link>
+                      <Link to="/itemlist" onClick={() => setShowUserMenu(false)} style={{ display: 'block', padding: '12px 16px', textDecoration: 'none', color: '#333', fontSize: '14px', borderBottom: '1px solid #eee' }}>📋 Browse Items</Link>
+                      <Link to="/groceryListOverview" onClick={() => setShowUserMenu(false)} style={{ display: 'block', padding: '12px 16px', textDecoration: 'none', color: '#333', fontSize: '14px', borderBottom: '1px solid #eee' }}>🛒 My Lists</Link>
+                      <Link to="/dashboard" onClick={() => setShowUserMenu(false)} style={{ display: 'block', padding: '12px 16px', textDecoration: 'none', color: '#333', fontSize: '14px', borderBottom: '1px solid #eee' }}>📊 Dashboard</Link>
+                      <Link to="/account" onClick={() => setShowUserMenu(false)} style={{ display: 'block', padding: '12px 16px', textDecoration: 'none', color: '#333', fontSize: '14px', borderBottom: '1px solid #eee' }}>⚙️ Account Settings</Link>
                     </>
                   )}
                   
-                  <Link
-                    to="/dashboard"
-                    onClick={() => setShowUserMenu(false)}
-                    style={{
-                      display: 'block',
-                      padding: '12px 16px',
-                      textDecoration: 'none',
-                      color: '#333',
-                      fontSize: '14px',
-                      borderBottom: '1px solid #eee'
-                    }}
-                  >
-                    📊 Dashboard
-                  </Link>
+                  {/* Employee: all normal user links plus Employee Dashboard */}
+                  {user?.role === 'employee' && (
+                    <>
+                      <Link to="/" onClick={() => setShowUserMenu(false)} style={{ display: 'block', padding: '12px 16px', textDecoration: 'none', color: '#333', fontSize: '14px', borderBottom: '1px solid #eee' }}>🏠 Home</Link>
+                      <Link to="/search" onClick={() => setShowUserMenu(false)} style={{ display: 'block', padding: '12px 16px', textDecoration: 'none', color: '#333', fontSize: '14px', borderBottom: '1px solid #eee' }}>🔍 Search</Link>
+                      <Link to="/itemlist" onClick={() => setShowUserMenu(false)} style={{ display: 'block', padding: '12px 16px', textDecoration: 'none', color: '#333', fontSize: '14px', borderBottom: '1px solid #eee' }}>📋 Browse Items</Link>
+                      <Link to="/groceryListOverview" onClick={() => setShowUserMenu(false)} style={{ display: 'block', padding: '12px 16px', textDecoration: 'none', color: '#333', fontSize: '14px', borderBottom: '1px solid #eee' }}>🛒 My Lists</Link>
+                      <Link to="/dashboard" onClick={() => setShowUserMenu(false)} style={{ display: 'block', padding: '12px 16px', textDecoration: 'none', color: '#333', fontSize: '14px', borderBottom: '1px solid #eee' }}>📊 Dashboard</Link>
+                      <Link to="/account" onClick={() => setShowUserMenu(false)} style={{ display: 'block', padding: '12px 16px', textDecoration: 'none', color: '#333', fontSize: '14px', borderBottom: '1px solid #eee' }}>⚙️ Account Settings</Link>
+                      <Link to="/employee" onClick={() => setShowUserMenu(false)} style={{ display: 'block', padding: '12px 16px', textDecoration: 'none', color: '#333', fontSize: '14px', borderBottom: '1px solid #eee' }}>👷 Employee Dashboard</Link>
+                    </>
+                  )}
                   
-                  <Link
-                    to="/account"
-                    onClick={() => setShowUserMenu(false)}
-                    style={{
-                      display: 'block',
-                      padding: '12px 16px',
-                      textDecoration: 'none',
-                      color: '#333',
-                      fontSize: '14px',
-                      borderBottom: '1px solid #eee'
-                    }}
-                  >
-                    ⚙️ Account Settings
-                  </Link>
+                  {/* Regular users: Dashboard and Account Settings */}
+                  {user?.role !== 'admin' && user?.role !== 'employee' && (
+                    <>
+                      <Link to="/dashboard" onClick={() => setShowUserMenu(false)} style={{ display: 'block', padding: '12px 16px', textDecoration: 'none', color: '#333', fontSize: '14px', borderBottom: '1px solid #eee' }}>📊 Dashboard</Link>
+                      <Link to="/account" onClick={() => setShowUserMenu(false)} style={{ display: 'block', padding: '12px 16px', textDecoration: 'none', color: '#333', fontSize: '14px', borderBottom: '1px solid #eee' }}>⚙️ Account Settings</Link>
+                    </>
+                  )}
                   
                   <button
                     onClick={handleLogout}
