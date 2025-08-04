@@ -16,8 +16,7 @@ const Navigation = () => {
   const publicNavItems = [
     { path: '/', label: 'Home' },
     { path: '/search', label: 'Search' },
-    { path: '/itemlist', label: 'Browse Items' },
-    { path: '/groceryListOverview', label: 'Grocery List'}
+    { path: '/itemlist', label: 'Browse Items' }
   ];
 
   return (
@@ -73,6 +72,16 @@ const Navigation = () => {
                 }}
               >
                 Dashboard
+              </Link>
+              
+              <Link
+                to="/groceryListOverview"
+                style={{
+                  color: 'blue',
+                  textDecoration: 'none'
+                }}
+              >
+                My Lists
               </Link>
               
               {/* Employee Dashboard Link - Only for employees */}

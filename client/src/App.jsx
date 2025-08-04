@@ -60,8 +60,22 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            <Route path="/groceryListOverview" element={<GroceryListOverview />} />
-          <Route path="/groceryListPage/:id" element={<GroceryListPage />} />
+            <Route 
+              path="/groceryListOverview" 
+              element={
+                <ProtectedRoute>
+                  <GroceryListOverview />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/groceryListPage/:id" 
+              element={
+                <ProtectedRoute>
+                  <GroceryListPage />
+                </ProtectedRoute>
+              } 
+            />
         </Routes>
         </div>
       </AuthProvider>

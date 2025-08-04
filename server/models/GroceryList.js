@@ -16,13 +16,24 @@ const groceryListSchema = new mongoose.Schema({
     quantity: {
       type: Number,
       default: 1,
+    },
+    itemName: {
+      type: String,
+      required: false
+    },
+    price: {
+      type: Number,
+      required: false
+    },
+    store: {
+      type: String,
+      required: false
     }
-  }
-  ],
+  }],
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: false
+    required: true
   }
 });
 
