@@ -14,10 +14,8 @@ const Homepage = () => {
       <div style={{
         maxWidth: '800px',
         margin: '0 auto',
-        backgroundColor: 'white',
         borderRadius: '20px',
-        padding: '40px',
-        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)'
+        padding: '40px'
       }}>
         {/* Hero Section */}
         <div style={{ marginBottom: '40px' }}>
