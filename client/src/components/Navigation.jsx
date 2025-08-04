@@ -70,12 +70,17 @@ const Navigation = () => {
             <Link
               to="/employee"
               style={{
-                color: 'blue',
+                color: '#28a745',
                 textDecoration: 'none',
-                fontWeight: 'bold'
+                fontWeight: 'bold',
+                backgroundColor: '#f8fff9',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                border: '1px solid #c3e6cb',
+                fontSize: '16px'
               }}
             >
-              Employee Dashboard
+              👷 Employee Dashboard
             </Link>
           )}
           {/* Regular user: All normal links */}

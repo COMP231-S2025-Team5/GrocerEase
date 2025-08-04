@@ -350,4 +350,297 @@ router.get('/products/:productId/history', auth, requireEmployee, async (req, re
   }
 });
 
+// Employee can add new item to their store
+router.post('/products', auth, requireEmployee, async (req, res) => {
+  try {
+    const {
+      itemName,
+      category,
+      price,
+      unitDetails,
+      stockCount = 0,
+      stockStatus = 'in-stock',
+      description,
+      nutritionalInfo,
+      barcode
+    } = req.body;
+
+    // Validate required fields
+    if (!itemName || !category || !price) {
+      return res.status(400).json({
+        success: false,
+        message: 'Item name, category, and price are required'
+      });
+    }
+
+    // Get employee's store information
+    let storeData = {};
+    if (req.employee.employeeDetails?.store) {
+      const employeeStore = await Store.findById(req.employee.employeeDetails.store);
+      if (employeeStore) {
+        storeData = {
+          _id: employeeStore._id,
+          name: employeeStore.name,
+          location: employeeStore.location || '',
+          address: employeeStore.address || ''
+        };
+      }
+    } else if (req.employee.employeeDetails?.storeName) {
+      // Fallback to legacy store data
+      storeData = {
+        name: req.employee.employeeDetails.storeName,
+        location: req.employee.employeeDetails.storeLocation || ''
+      };
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: 'Employee store information not found'
+      });
+    }
+
+    // Create new product
+    const newProduct = new GroceryItem({
+      itemName,
+      category,
+      price: parseFloat(price),
+      unitDetails: unitDetails || {},
+      stockCount: parseInt(stockCount) || 0,
+      stockStatus,
+      description: description || '',
+      nutritionalInfo: nutritionalInfo || {},
+      barcode: barcode || '',
+      store: storeData,
+      isActive: true,
+      lastStockUpdate: {
+        updatedBy: req.employee._id,
+        updatedAt: new Date(),
+        previousStatus: null,
+        newStatus: stockStatus,
+        reason: 'Product added by employee',
+        employeeName: req.employee.name,
+        employeeId: req.employee.employeeDetails?.employeeId || req.employee._id
+      }
+    });
+
+    const savedProduct = await newProduct.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Product added successfully',
+      data: {
+        product: savedProduct
+      }
+    });
+
+  } catch (error) {
+    let errorMessage = 'Failed to add product';
+    if (error.name === 'ValidationError') {
+      errorMessage = 'Invalid product data: ' + Object.values(error.errors).map(e => e.message).join(', ');
+    } else if (error.code === 11000) {
+      errorMessage = 'Product with this name already exists in your store';
+    }
+
+    res.status(400).json({
+      success: false,
+      message: errorMessage,
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
+  }
+});
+
+// Employee can update item details (not just stock status)
+router.put('/products/:productId', auth, requireEmployee, async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const {
+      itemName,
+      category,
+      price,
+      unitDetails,
+      stockCount,
+      stockStatus,
+      description,
+      nutritionalInfo,
+      barcode
+    } = req.body;
+
+    // Find the product
+    const product = await GroceryItem.findById(productId);
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    // Check if employee can modify this product (same store)
+    if (req.employee.role !== 'admin') {
+      let canModify = false;
+      
+      // Check with new Store reference
+      if (req.employee.employeeDetails?.store && product.store._id) {
+        canModify = product.store._id.toString() === req.employee.employeeDetails.store.toString();
+      }
+      
+      // Fallback to legacy store name comparison
+      if (!canModify && req.employee.employeeDetails?.storeName && product.store.name) {
+        canModify = product.store.name === req.employee.employeeDetails.storeName;
+      }
+      
+      if (!canModify) {
+        return res.status(403).json({
+          success: false,
+          message: 'You can only modify products from your assigned store'
+        });
+      }
+    }
+
+    // Prepare update data
+    const updateData = {};
+    const previousData = {
+      itemName: product.itemName,
+      category: product.category,
+      price: product.price,
+      stockStatus: product.stockStatus,
+      stockCount: product.stockCount
+    };
+
+    // Update only provided fields
+    if (itemName !== undefined) updateData.itemName = itemName;
+    if (category !== undefined) updateData.category = category;
+    if (price !== undefined) updateData.price = parseFloat(price);
+    if (unitDetails !== undefined) updateData.unitDetails = unitDetails;
+    if (stockCount !== undefined) updateData.stockCount = parseInt(stockCount) || 0;
+    if (stockStatus !== undefined) updateData.stockStatus = stockStatus;
+    if (description !== undefined) updateData.description = description;
+    if (nutritionalInfo !== undefined) updateData.nutritionalInfo = nutritionalInfo;
+    if (barcode !== undefined) updateData.barcode = barcode;
+
+    // Add update tracking
+    updateData.lastStockUpdate = {
+      updatedBy: req.employee._id,
+      updatedAt: new Date(),
+      previousStatus: product.stockStatus,
+      newStatus: stockStatus || product.stockStatus,
+      reason: 'Product details updated by employee',
+      employeeName: req.employee.name,
+      employeeId: req.employee.employeeDetails?.employeeId || req.employee._id
+    };
+
+    const updatedProduct = await GroceryItem.findByIdAndUpdate(
+      productId,
+      updateData,
+      { new: true, runValidators: true }
+    );
+
+    res.json({
+      success: true,
+      message: 'Product updated successfully',
+      data: {
+        product: updatedProduct,
+        changes: {
+          performedBy: req.employee.name,
+          timestamp: new Date(),
+          previousData,
+          newData: {
+            itemName: updatedProduct.itemName,
+            category: updatedProduct.category,
+            price: updatedProduct.price,
+            stockStatus: updatedProduct.stockStatus,
+            stockCount: updatedProduct.stockCount
+          }
+        }
+      }
+    });
+
+  } catch (error) {
+    let errorMessage = 'Failed to update product';
+    if (error.name === 'ValidationError') {
+      errorMessage = 'Invalid product data: ' + Object.values(error.errors).map(e => e.message).join(', ');
+    } else if (error.name === 'CastError') {
+      errorMessage = 'Invalid product ID';
+    }
+
+    res.status(400).json({
+      success: false,
+      message: errorMessage,
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
+  }
+});
+
+// Employee can remove item from their store
+router.delete('/products/:productId', auth, requireEmployee, async (req, res) => {
+  try {
+    const { productId } = req.params;
+
+    // Find the product
+    const product = await GroceryItem.findById(productId);
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found'
+      });
+    }
+
+    // Check if employee can modify this product (same store)
+    if (req.employee.role !== 'admin') {
+      let canModify = false;
+      
+      // Check with new Store reference
+      if (req.employee.employeeDetails?.store && product.store._id) {
+        canModify = product.store._id.toString() === req.employee.employeeDetails.store.toString();
+      }
+      
+      // Fallback to legacy store name comparison
+      if (!canModify && req.employee.employeeDetails?.storeName && product.store.name) {
+        canModify = product.store.name === req.employee.employeeDetails.storeName;
+      }
+      
+      if (!canModify) {
+        return res.status(403).json({
+          success: false,
+          message: 'You can only remove products from your assigned store'
+        });
+      }
+    }
+
+    // Store product info before deletion for response
+    const deletedProductInfo = {
+      id: product._id,
+      itemName: product.itemName,
+      category: product.category,
+      store: product.store
+    };
+
+    // Delete the product
+    await GroceryItem.findByIdAndDelete(productId);
+
+    res.json({
+      success: true,
+      message: 'Product removed successfully',
+      data: {
+        deletedProduct: deletedProductInfo,
+        action: {
+          performedBy: req.employee.name,
+          timestamp: new Date(),
+          action: 'Product removed from store inventory'
+        }
+      }
+    });
+
+  } catch (error) {
+    let errorMessage = 'Failed to remove product';
+    if (error.name === 'CastError') {
+      errorMessage = 'Invalid product ID';
+    }
+
+    res.status(500).json({
+      success: false,
+      message: errorMessage,
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
+  }
+});
+
 export default router;

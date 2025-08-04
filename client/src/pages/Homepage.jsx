@@ -44,7 +44,7 @@ const Homepage = () => {
           // Logged-in user content
           <div>
             <div style={{
-              backgroundColor: '#f8f9fa',
+              backgroundColor: 'white',
               borderRadius: '15px',
               padding: '25px',
               marginBottom: '30px',

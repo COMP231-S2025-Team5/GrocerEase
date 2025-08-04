@@ -36,6 +36,19 @@ const EmployeeDashboard = () => {
     stockCount: ''
   });
   const [storeInfo, setStoreInfo] = useState(null);
+  
+  // New states for item management
+  const [addItemModal, setAddItemModal] = useState(false);
+  const [editItemModal, setEditItemModal] = useState(false);
+  const [newItemData, setNewItemData] = useState({
+    itemName: '',
+    category: '',
+    price: '',
+    unitDetails: { unit: 'item', quantity: 1 },
+    stockCount: '',
+    stockStatus: 'in-stock'
+  });
+  const [editItemData, setEditItemData] = useState({});
 
   // S11-1: Fetch products with sorting and filtering
   const fetchProducts = async (page = 1) => {
@@ -168,6 +181,138 @@ const EmployeeDashboard = () => {
         fetchProducts(pagination.currentPage);
       } else {
         setError(data.message || 'Failed to mark as out of stock');
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Add new item
+  const handleAddItem = async () => {
+    if (!newItemData.itemName || !newItemData.category || !newItemData.price) {
+      setError('Item name, category, and price are required');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch('http://localhost:5000/api/employee/products', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newItemData)
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setSuccess('Item added successfully');
+        setAddItemModal(false);
+        setNewItemData({
+          itemName: '',
+          category: '',
+          price: '',
+          unitDetails: { unit: '', weight: '' },
+          stockCount: '',
+          stockStatus: 'in-stock',
+          description: '',
+          barcode: ''
+        });
+        fetchProducts(pagination.currentPage);
+      } else {
+        setError(data.message || 'Failed to add item');
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Edit item
+  const handleEditItem = (product) => {
+    setSelectedProduct(product);
+    setEditItemData({
+      itemName: product.itemName,
+      category: product.category,
+      price: product.price,
+      unitDetails: product.unitDetails || { unit: 'item', quantity: 1 },
+      stockCount: product.stockCount || '',
+      stockStatus: product.stockStatus
+    });
+    setEditItemModal(true);
+    setError('');
+    setSuccess('');
+  };
+
+  // Update item
+  const handleUpdateItem = async () => {
+    if (!editItemData.itemName || !editItemData.category || !editItemData.price) {
+      setError('Item name, category, and price are required');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/employee/products/${selectedProduct._id}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(editItemData)
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        setSuccess('Item updated successfully');
+        setEditItemModal(false);
+        setSelectedProduct(null);
+        fetchProducts(pagination.currentPage);
+      } else {
+        setError(data.message || 'Failed to update item');
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Remove item
+  const handleRemoveItem = async (product) => {
+    if (!window.confirm(`Are you sure you want to remove "${product.itemName}" from the store?`)) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/employee/products/${product._id}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        setSuccess(`${product.itemName} removed successfully`);
+        fetchProducts(pagination.currentPage);
+      } else {
+        setError(data.message || 'Failed to remove item');
       }
     } catch (err) {
       setError('Network error. Please try again.');
@@ -525,22 +670,53 @@ const EmployeeDashboard = () => {
       ) : (
         <>
           <div style={{ marginBottom: '20px' }}>
-            <h3 style={{ 
-              color: '#333', 
+            <div style={{ 
               display: 'flex', 
               alignItems: 'center', 
-              gap: '10px',
-              fontSize: '1.4rem'
+              justifyContent: 'space-between',
+              marginBottom: '10px'
             }}>
-              🛒 Store Inventory
-              <span style={{ 
-                fontSize: '1rem', 
-                color: '#666', 
-                fontWeight: 'normal' 
+              <h3 style={{ 
+                color: '#333', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '10px',
+                fontSize: '1.4rem',
+                margin: 0
               }}>
-                ({pagination.totalItems} products{storeInfo?.name ? ` at ${storeInfo.name}` : ''})
-              </span>
-            </h3>
+                🛒 Store Inventory
+                <span style={{ 
+                  fontSize: '1rem', 
+                  color: '#666', 
+                  fontWeight: 'normal' 
+                }}>
+                  ({pagination.totalItems} products{storeInfo?.name ? ` at ${storeInfo.name}` : ''})
+                </span>
+              </h3>
+              
+              <button
+                onClick={() => {
+                  setAddItemModal(true);
+                  setError('');
+                  setSuccess('');
+                }}
+                style={{
+                  backgroundColor: '#28a745',
+                  color: 'white',
+                  border: 'none',
+                  padding: '10px 20px',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                ➕ Add New Item
+              </button>
+            </div>
             {storeInfo && (
               <p style={{ 
                 color: '#666', 
@@ -614,6 +790,40 @@ const EmployeeDashboard = () => {
                       }}
                     >
                       Update Stock
+                    </button>
+
+                    {/* Edit Item Button */}
+                    <button
+                      onClick={() => handleEditItem(product)}
+                      style={{
+                        backgroundColor: '#ffc107',
+                        color: '#212529',
+                        border: 'none',
+                        padding: '8px 16px',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      Edit Item
+                    </button>
+
+                    {/* Remove Item Button */}
+                    <button
+                      onClick={() => handleRemoveItem(product)}
+                      style={{
+                        backgroundColor: '#6c757d',
+                        color: 'white',
+                        border: 'none',
+                        padding: '8px 16px',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '14px'
+                      }}
+                      disabled={loading}
+                    >
+                      Remove
                     </button>
                   </div>
                 </div>
@@ -721,7 +931,10 @@ const EmployeeDashboard = () => {
                   width: '100%',
                   padding: '8px',
                   border: '1px solid #ddd',
-                  borderRadius: '4px'
+                  borderRadius: '4px',
+                  backgroundColor: 'white',
+                  color: '#333',
+                  fontSize: '14px'
                 }}
               >
                 <option value="in-stock">In Stock</option>
@@ -744,7 +957,10 @@ const EmployeeDashboard = () => {
                   width: '100%',
                   padding: '8px',
                   border: '1px solid #ddd',
-                  borderRadius: '4px'
+                  borderRadius: '4px',
+                  backgroundColor: 'white',
+                  color: '#333',
+                  fontSize: '14px'
                 }}
               />
             </div>
@@ -762,6 +978,9 @@ const EmployeeDashboard = () => {
                   padding: '8px',
                   border: '1px solid #ddd',
                   borderRadius: '4px',
+                  backgroundColor: 'white',
+                  color: '#333',
+                  fontSize: '14px',
                   resize: 'vertical'
                 }}
                 placeholder="Optional reason for the stock status change..."
@@ -800,6 +1019,481 @@ const EmployeeDashboard = () => {
                 }}
               >
                 {loading ? 'Updating...' : 'Update Stock'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Item Modal */}
+      {addItemModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '30px',
+            borderRadius: '8px',
+            maxWidth: '600px',
+            width: '90%',
+            maxHeight: '80vh',
+            overflow: 'auto'
+          }}>
+            <h3>Add New Item</h3>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                  Item Name *
+                </label>
+                <input
+                  type="text"
+                  value={newItemData.itemName}
+                  onChange={(e) => setNewItemData(prev => ({ ...prev, itemName: e.target.value }))}
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    backgroundColor: 'white',
+                    color: '#333'
+                  }}
+                  placeholder="Enter item name"
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                  Category *
+                </label>
+                <select
+                  value={newItemData.category}
+                  onChange={(e) => setNewItemData(prev => ({ ...prev, category: e.target.value }))}
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    backgroundColor: 'white',
+                    color: '#333'
+                  }}
+                >
+                  <option value="">Select Category</option>
+                  {availableFilters.categories.map(cat => (
+                    <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                  Price *
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={newItemData.price}
+                  onChange={(e) => setNewItemData(prev => ({ ...prev, price: e.target.value }))}
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    backgroundColor: 'white',
+                    color: '#333'
+                  }}
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                  Stock Count
+                </label>
+                <input
+                  type="number"
+                  value={newItemData.stockCount}
+                  onChange={(e) => setNewItemData(prev => ({ ...prev, stockCount: e.target.value }))}
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    backgroundColor: 'white',
+                    color: '#333'
+                  }}
+                  placeholder="0"
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                  Unit
+                </label>
+                <input
+                  type="text"
+                  value={newItemData.unitDetails.unit}
+                  onChange={(e) => setNewItemData(prev => ({ 
+                    ...prev, 
+                    unitDetails: { ...prev.unitDetails, unit: e.target.value }
+                  }))}
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    backgroundColor: 'white',
+                    color: '#333'
+                  }}
+                  placeholder="e.g., lb, oz, piece"
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                  Stock Status
+                </label>
+                <select
+                  value={newItemData.stockStatus}
+                  onChange={(e) => setNewItemData(prev => ({ ...prev, stockStatus: e.target.value }))}
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    backgroundColor: 'white',
+                    color: '#333'
+                  }}
+                >
+                  <option value="in-stock">In Stock</option>
+                  <option value="out-of-stock">Out of Stock</option>
+                  <option value="low-stock">Low Stock</option>
+                  <option value="discontinued">Discontinued</option>
+                </select>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                Description
+              </label>
+              <textarea
+                value={newItemData.description}
+                onChange={(e) => setNewItemData(prev => ({ ...prev, description: e.target.value }))}
+                rows="3"
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  backgroundColor: 'white',
+                  color: '#333',
+                  resize: 'vertical'
+                }}
+                placeholder="Optional product description"
+              />
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                Barcode
+              </label>
+              <input
+                type="text"
+                value={newItemData.barcode}
+                onChange={(e) => setNewItemData(prev => ({ ...prev, barcode: e.target.value }))}
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  backgroundColor: 'white',
+                  color: '#333'
+                }}
+                placeholder="Optional barcode"
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => {
+                  setAddItemModal(false);
+                  setNewItemData({
+                    itemName: '',
+                    category: '',
+                    price: '',
+                    unitDetails: { unit: '', weight: '' },
+                    stockCount: '',
+                    stockStatus: 'in-stock',
+                    description: '',
+                    barcode: ''
+                  });
+                  setError('');
+                }}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#6c757d',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                Cancel
+              </button>
+              
+              <button
+                onClick={handleAddItem}
+                disabled={!newItemData.itemName || !newItemData.category || !newItemData.price || loading}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: (newItemData.itemName && newItemData.category && newItemData.price) ? '#28a745' : '#6c757d',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: (newItemData.itemName && newItemData.category && newItemData.price) ? 'pointer' : 'not-allowed'
+                }}
+              >
+                {loading ? 'Adding...' : 'Add Item'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Item Modal */}
+      {editItemModal && selectedProduct && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '30px',
+            borderRadius: '8px',
+            maxWidth: '600px',
+            width: '90%',
+            maxHeight: '80vh',
+            overflow: 'auto'
+          }}>
+            <h3>Edit Item Details</h3>
+            <p><strong>Product:</strong> {selectedProduct.itemName}</p>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                  Item Name *
+                </label>
+                <input
+                  type="text"
+                  value={editItemData.itemName}
+                  onChange={(e) => setEditItemData(prev => ({ ...prev, itemName: e.target.value }))}
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    backgroundColor: 'white',
+                    color: '#333'
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                  Category *
+                </label>
+                <select
+                  value={editItemData.category}
+                  onChange={(e) => setEditItemData(prev => ({ ...prev, category: e.target.value }))}
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    backgroundColor: 'white',
+                    color: '#333'
+                  }}
+                >
+                  {availableFilters.categories.map(cat => (
+                    <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                  Price *
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={editItemData.price}
+                  onChange={(e) => setEditItemData(prev => ({ ...prev, price: e.target.value }))}
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    backgroundColor: 'white',
+                    color: '#333'
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                  Stock Count
+                </label>
+                <input
+                  type="number"
+                  value={editItemData.stockCount}
+                  onChange={(e) => setEditItemData(prev => ({ ...prev, stockCount: e.target.value }))}
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    backgroundColor: 'white',
+                    color: '#333'
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                  Unit
+                </label>
+                <input
+                  type="text"
+                  value={editItemData.unitDetails?.unit || ''}
+                  onChange={(e) => setEditItemData(prev => ({ 
+                    ...prev, 
+                    unitDetails: { ...prev.unitDetails, unit: e.target.value }
+                  }))}
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    backgroundColor: 'white',
+                    color: '#333'
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                  Stock Status
+                </label>
+                <select
+                  value={editItemData.stockStatus}
+                  onChange={(e) => setEditItemData(prev => ({ ...prev, stockStatus: e.target.value }))}
+                  style={{
+                    width: '100%',
+                    padding: '8px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    backgroundColor: 'white',
+                    color: '#333'
+                  }}
+                >
+                  <option value="in-stock">In Stock</option>
+                  <option value="out-of-stock">Out of Stock</option>
+                  <option value="low-stock">Low Stock</option>
+                  <option value="discontinued">Discontinued</option>
+                </select>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                Description
+              </label>
+              <textarea
+                value={editItemData.description || ''}
+                onChange={(e) => setEditItemData(prev => ({ ...prev, description: e.target.value }))}
+                rows="3"
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  backgroundColor: 'white',
+                  color: '#333',
+                  resize: 'vertical'
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                Barcode
+              </label>
+              <input
+                type="text"
+                value={editItemData.barcode || ''}
+                onChange={(e) => setEditItemData(prev => ({ ...prev, barcode: e.target.value }))}
+                style={{
+                  width: '100%',
+                  padding: '8px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  backgroundColor: 'white',
+                  color: '#333'
+                }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={() => {
+                  setEditItemModal(false);
+                  setSelectedProduct(null);
+                  setError('');
+                }}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#6c757d',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                Cancel
+              </button>
+              
+              <button
+                onClick={handleUpdateItem}
+                disabled={!editItemData.itemName || !editItemData.category || !editItemData.price || loading}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: (editItemData.itemName && editItemData.category && editItemData.price) ? '#28a745' : '#6c757d',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: (editItemData.itemName && editItemData.category && editItemData.price) ? 'pointer' : 'not-allowed'
+                }}
+              >
+                {loading ? 'Updating...' : 'Update Item'}
               </button>
             </div>
           </div>
