@@ -42,7 +42,7 @@ const Navigation = () => {
           fontSize: '1.5rem',
           fontWeight: 'bold'
         }}>
-          GrocerEase
+          🛒 GrocerEase
         </Link>
 
         {/* Navigation Links */}

@@ -8,7 +8,6 @@ const Homepage = () => {
   return (
     <div style={{
       minHeight: '80vh',
-      background: 'linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%)',
       padding: '40px 20px',
       textAlign: 'center'
     }}>
@@ -105,31 +104,6 @@ const Homepage = () => {
               </Link>
 
               <Link
-                to="/search"
-                style={{
-                  textDecoration: 'none',
-                  backgroundColor: '#007bff',
-                  color: 'white',
-                  padding: '25px',
-                  borderRadius: '12px',
-                  transition: 'all 0.3s',
-                  display: 'block'
-                }}
-                onMouseOver={(e) => {
-                  e.target.style.backgroundColor = '#0056b3';
-                  e.target.style.transform = 'translateY(-3px)';
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.backgroundColor = '#007bff';
-                  e.target.style.transform = 'translateY(0)';
-                }}
-              >
-                <div style={{ fontSize: '2rem', marginBottom: '10px' }}>🔍</div>
-                <h3 style={{ margin: '0 0 8px 0', fontSize: '1.2rem' }}>Search Items</h3>
-                <p style={{ margin: 0, opacity: 0.9 }}>Find products to add to your lists</p>
-              </Link>
-
-              <Link
                 to="/dashboard"
                 style={{
                   textDecoration: 'none',
@@ -159,43 +133,17 @@ const Homepage = () => {
           // Guest user content
           <div>
             <div style={{
-              backgroundColor: '#fff3cd',
-              borderRadius: '15px',
-              padding: '25px',
-              marginBottom: '30px',
-              border: '2px solid #ffeaa7'
-            }}>
-              <h2 style={{
-                color: '#856404',
-                fontSize: '1.8rem',
-                marginBottom: '15px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '10px'
-              }}>
-                🌟 Transform Your Shopping Experience
-              </h2>
-              <p style={{
-                color: '#856404',
-                fontSize: '1.1rem',
-                marginBottom: 0
-              }}>
-                Join thousands of users who have simplified their grocery shopping!
-              </p>
-            </div>
-
-            <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
               gap: '20px',
               marginBottom: '40px'
             }}>
               <div style={{
-                backgroundColor: '#f8f9fa',
+                backgroundColor: 'white',
                 padding: '20px',
                 borderRadius: '12px',
-                border: '2px solid #e9ecef'
+                border: '2px solid #e9ecef',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
               }}>
                 <div style={{ fontSize: '2rem', marginBottom: '10px' }}>✅</div>
                 <h3 style={{ color: '#333', fontSize: '1.1rem', marginBottom: '8px' }}>Organize Lists</h3>
@@ -203,10 +151,11 @@ const Homepage = () => {
               </div>
 
               <div style={{
-                backgroundColor: '#f8f9fa',
+                backgroundColor: 'white',
                 padding: '20px',
                 borderRadius: '12px',
-                border: '2px solid #e9ecef'
+                border: '2px solid #e9ecef',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
               }}>
                 <div style={{ fontSize: '2rem', marginBottom: '10px' }}>🎯</div>
                 <h3 style={{ color: '#333', fontSize: '1.1rem', marginBottom: '8px' }}>Smart Search</h3>
@@ -214,10 +163,11 @@ const Homepage = () => {
               </div>
 
               <div style={{
-                backgroundColor: '#f8f9fa',
+                backgroundColor: 'white',
                 padding: '20px',
                 borderRadius: '12px',
-                border: '2px solid #e9ecef'
+                border: '2px solid #e9ecef',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
               }}>
                 <div style={{ fontSize: '2rem', marginBottom: '10px' }}>📱</div>
                 <h3 style={{ color: '#333', fontSize: '1.1rem', marginBottom: '8px' }}>Always Available</h3>
@@ -227,7 +177,7 @@ const Homepage = () => {
 
             <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap' }}>
               <Link
-                to="/register"
+                to="/login"
                 style={{
                   textDecoration: 'none',
                   backgroundColor: '#28a745',
@@ -251,34 +201,6 @@ const Homepage = () => {
                 }}
               >
                 🚀 Get Started Free
-              </Link>
-
-              <Link
-                to="/login"
-                style={{
-                  textDecoration: 'none',
-                  backgroundColor: 'transparent',
-                  color: '#007bff',
-                  padding: '15px 30px',
-                  borderRadius: '25px',
-                  fontSize: '1.1rem',
-                  fontWeight: '600',
-                  border: '2px solid #007bff',
-                  transition: 'all 0.3s',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}
-                onMouseOver={(e) => {
-                  e.target.style.backgroundColor = '#007bff';
-                  e.target.style.color = 'white';
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.backgroundColor = 'transparent';
-                  e.target.style.color = '#007bff';
-                }}
-              >
-                👤 Sign In
               </Link>
             </div>
           </div>

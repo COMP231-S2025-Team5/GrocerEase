@@ -61,6 +61,14 @@ function App() {
               }
             />
             <Route 
+              path="/grocery-lists" 
+              element={
+                <ProtectedRoute>
+                  <GroceryListOverview />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
               path="/groceryListOverview" 
               element={
                 <ProtectedRoute>
