@@ -14,19 +14,43 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
 
-  const { login, register, isAuthenticated } = useAuth();
+  const { login, register, isAuthenticated, user, setAuth } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   // Get the intended destination (where user was trying to go before login)
-  const from = location.state?.from?.pathname || '/dashboard';
+  const from = location.state?.from?.pathname || null;
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated with role-based routing
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate(from, { replace: true });
+    if (isAuthenticated && user) {
+      // If user is already authenticated, redirect to their appropriate dashboard
+      if (user.role === 'admin') {
+        navigate('/admin', { replace: true });
+      } else if (user.role === 'employee') {
+        navigate('/employee', { replace: true });
+      } else {
+        navigate(from || '/dashboard', { replace: true });
+      }
     }
-  }, [isAuthenticated, navigate, from]);
+  }, [isAuthenticated, user, navigate, from]);
+
+  // Handle browser autofill errors gracefully
+  useEffect(() => {
+    const handleError = (event) => {
+      if (event.error && event.error.message && 
+          (event.error.message.includes('insertBefore') || 
+           event.error.message.includes('Child to insert before is not a child'))) {
+        // Suppress autofill-related DOM errors
+        event.preventDefault();
+        event.stopPropagation();
+        return false;
+      }
+    };
+
+    window.addEventListener('error', handleError, true);
+    return () => window.removeEventListener('error', handleError, true);
+  }, []);
 
   const validateForm = () => {
     const newErrors = {};
@@ -99,26 +123,72 @@ const LoginPage = () => {
     if (!validateForm()) {
       return;
     }
-
-    setLoading(true);
+    
     setMessage({ text: '', type: '' });
+    setLoading(true);
 
     try {
-      let result;
-      if (isLogin) {
-        result = await login(formData.email, formData.password);
-      } else {
-        result = await register(formData.name, formData.email, formData.password, formData.confirmPassword);
-      }
+      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+      const requestBody = isLogin 
+        ? { email: formData.email, password: formData.password }
+        : { 
+            name: formData.name, 
+            email: formData.email, 
+            password: formData.password 
+          };
 
-      if (result.success) {
-        setMessage({ text: result.message, type: 'success' });
-        // Navigation will happen automatically due to useEffect checking isAuthenticated
+      const response = await fetch(`http://localhost:5000${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        if (isLogin) {
+          // Backend returns user data in data.data structure
+          const userData = data.data?.user || data.user;
+          const userToken = data.data?.token || data.token;
+          
+          console.log('Login successful, user data:', userData); // Debug log
+          
+          setAuth(userToken, userData);
+          
+          // Role-based redirection
+          if (userData.role === 'admin') {
+            navigate('/admin', { replace: true });
+          } else if (userData.role === 'employee') {
+            navigate('/employee', { replace: true });
+          } else {
+            navigate('/dashboard', { replace: true });
+          }
+        } else {
+          setMessage({ 
+            text: 'Account created successfully! Please sign in.', 
+            type: 'success' 
+          });
+          setIsLogin(true);
+          setFormData({
+            name: '',
+            email: '',
+            password: '',
+            confirmPassword: ''
+          });
+        }
       } else {
-        setMessage({ text: result.message, type: 'error' });
+        setMessage({ 
+          text: data.message || `${isLogin ? 'Login' : 'Registration'} failed`, 
+          type: 'error' 
+        });
       }
-    } catch (error) {
-      setMessage({ text: 'An unexpected error occurred. Please try again.', type: 'error' });
+    } catch (err) {
+      setMessage({ 
+        text: 'Network error. Please try again.', 
+        type: 'error' 
+      });
     } finally {
       setLoading(false);
     }
@@ -220,7 +290,7 @@ const LoginPage = () => {
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} autoComplete="on">
           {/* Name Field (Registration only) */}
           {!isLogin && (
             <div style={{ marginBottom: '20px' }}>
@@ -235,6 +305,7 @@ const LoginPage = () => {
               <input
                 type="text"
                 name="name"
+                autoComplete="name"
                 value={formData.name}
                 onChange={handleInputChange}
                 placeholder="Enter your full name"
@@ -261,6 +332,7 @@ const LoginPage = () => {
             <input
               type="email"
               name="email"
+              autoComplete={isLogin ? "username" : "email"}
               value={formData.email}
               onChange={handleInputChange}
               placeholder="Enter your email"
@@ -286,6 +358,7 @@ const LoginPage = () => {
             <input
               type="password"
               name="password"
+              autoComplete={isLogin ? "current-password" : "new-password"}
               value={formData.password}
               onChange={handleInputChange}
               placeholder={isLogin ? "Enter your password" : "Create a strong password"}
@@ -317,6 +390,7 @@ const LoginPage = () => {
               <input
                 type="password"
                 name="confirmPassword"
+                autoComplete="new-password"
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
                 placeholder="Confirm your password"

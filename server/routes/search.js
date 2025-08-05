@@ -141,7 +141,6 @@ router.get('/',
     });
 
   } catch (error) {
-    console.error('Search error:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error during search',
@@ -196,7 +195,6 @@ router.get('/filters', cacheFilterOptions, async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Filter options error:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching filter options',
@@ -359,7 +357,6 @@ router.post('/advanced', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Advanced search error:', error);
     res.status(500).json({
       success: false,
       message: 'Error in advanced search',
@@ -441,7 +438,6 @@ router.get('/presets/:presetName', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Preset search error:', error);
     res.status(500).json({
       success: false,
       message: 'Error in preset search',
@@ -498,7 +494,6 @@ router.get('/suggestions', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Suggestions error:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching suggestions',

@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
 import Navigation from './components/Navigation';
 import Homepage from './pages/Homepage';
 import SearchPage from './pages/SearchPage';
@@ -55,13 +56,35 @@ function App() {
             <Route
               path="/admin"
               element={
-                <ProtectedRoute>
+                <AdminRoute>
                   <AdminPage />
-                </ProtectedRoute>
+                </AdminRoute>
               }
             />
-            <Route path="/groceryListOverview" element={<GroceryListOverview />} />
-          <Route path="/groceryListPage/:id" element={<GroceryListPage />} />
+            <Route 
+              path="/grocery-lists" 
+              element={
+                <ProtectedRoute>
+                  <GroceryListOverview />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/groceryListOverview" 
+              element={
+                <ProtectedRoute>
+                  <GroceryListOverview />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/groceryListPage/:id" 
+              element={
+                <ProtectedRoute>
+                  <GroceryListPage />
+                </ProtectedRoute>
+              } 
+            />
         </Routes>
         </div>
       </AuthProvider>

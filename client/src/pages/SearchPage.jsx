@@ -70,7 +70,7 @@ const SearchPage = () => {
         setFilterOptions(data.data);
       }
     } catch (err) {
-      console.error('Failed to fetch filter options:', err);
+      // Silently fail - filter options are not critical
     }
   };
 
@@ -104,7 +104,6 @@ const SearchPage = () => {
       setSearchResults(data.data.results);
       setPagination(data.data.pagination);
     } catch (err) {
-      console.error('Search error:', err);
       setError('Failed to search items. Please try again.');
     } finally {
       setLoading(false);

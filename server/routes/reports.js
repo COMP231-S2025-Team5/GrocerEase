@@ -69,7 +69,6 @@ router.post('/', auth, async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error creating report:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error',
@@ -117,7 +116,6 @@ router.get('/my-reports', auth, async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error fetching user reports:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error',
@@ -152,7 +150,6 @@ router.get('/check/:itemId', auth, async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error checking report status:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error',

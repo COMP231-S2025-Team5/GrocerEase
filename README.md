@@ -105,6 +105,3 @@ The backend provides the following API endpoints:
 - **GET** `/api/item/:id` - Get specific item details
 - **POST** `/api/auth/login` - User authentication
 - **POST** `/api/auth/register` - User registration
-
-
-

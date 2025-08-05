@@ -16,8 +16,7 @@ const Navigation = () => {
   const publicNavItems = [
     { path: '/', label: 'Home' },
     { path: '/search', label: 'Search' },
-    { path: '/itemlist', label: 'Browse Items' },
-    { path: '/groceryListOverview', label: 'Grocery List'}
+    { path: '/itemlist', label: 'Browse Items' }
   ];
 
   return (
@@ -43,164 +42,172 @@ const Navigation = () => {
           fontSize: '1.5rem',
           fontWeight: 'bold'
         }}>
-          GrocerEase
+          🛒 GrocerEase
         </Link>
 
         {/* Navigation Links */}
         <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-          {/* Public Navigation Links */}
-          {publicNavItems.map((item) => (
+          {/* Public links visible to logged-out users and regular users only */}
+          {(!isAuthenticated || (user?.role !== 'admin' && user?.role !== 'employee')) && (
+            <>
+              <Link to="/search" style={{ color: 'blue', textDecoration: 'none' }}>Search</Link>
+              <Link to="/itemlist" style={{ color: 'blue', textDecoration: 'none' }}>Browse Items</Link>
+            </>
+          )}
+          
+          {/* Admin: Only Admin Panel */}
+          {isAuthenticated && user?.role === 'admin' && (
             <Link
-              key={item.path}
-              to={item.path}
+              to="/admin"
               style={{
-                color: 'blue',
-                textDecoration: 'none'
+                color: '#dc3545',
+                textDecoration: 'none',
+                fontWeight: 'bold',
+                backgroundColor: '#fff5f5',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                border: '1px solid #fecaca',
+                fontSize: '16px'
               }}
             >
-              {item.label}
+              🛡️ Admin Panel
             </Link>
-          ))}
-
-          {/* Authentication-based Navigation */}
-          {isAuthenticated ? (
+          )}
+          {/* Employee: Only Employee Dashboard */}
+          {isAuthenticated && user?.role === 'employee' && (
+            <Link
+              to="/employee"
+              style={{
+                color: '#28a745',
+                textDecoration: 'none',
+                fontWeight: 'bold',
+                backgroundColor: '#f8fff9',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                border: '1px solid #c3e6cb',
+                fontSize: '16px'
+              }}
+            >
+              👷 Employee Dashboard
+            </Link>
+          )}
+          {/* Regular user: Additional authenticated links */}
+          {isAuthenticated && user?.role !== 'admin' && user?.role !== 'employee' && (
             <>
-              <Link
-                to="/dashboard"
+              <Link to="/dashboard" style={{ color: 'blue', textDecoration: 'none' }}>Dashboard</Link>
+              <Link to="/groceryListOverview" style={{ color: 'blue', textDecoration: 'none' }}>My Lists</Link>
+            </>
+          )}
+
+          {/* User Menu - Always show if authenticated */}
+          {isAuthenticated ? (
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
                 style={{
-                  color: 'blue',
-                  textDecoration: 'none'
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  backgroundColor: 'transparent',
+                  border: '1px solid #ddd',
+                  borderRadius: '20px',
+                  padding: '8px 12px',
+                  cursor: 'pointer',
+                  color: '#333'
                 }}
               >
-                Dashboard
-              </Link>
-              
-              {/* Employee Dashboard Link - Only for employees */}
-              {(user?.role === 'employee' || user?.role === 'admin') && (
-                <Link
-                  to="/employee"
-                  style={{
-                    color: 'blue',
-                    textDecoration: 'none',
-                    fontWeight: user?.role === 'employee' ? 'bold' : 'normal'
-                  }}
-                >
-                  Employee Dashboard
-                </Link>
-              )}
-              
-              {/* User Menu */}
-              <div style={{ position: 'relative' }}>
-                <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    backgroundColor: 'transparent',
-                    border: '1px solid #ddd',
-                    borderRadius: '20px',
-                    padding: '8px 12px',
-                    cursor: 'pointer',
-                    color: '#333'
-                  }}
-                >
-                  <span style={{
-                    width: '24px',
-                    height: '24px',
-                    backgroundColor: '#007bff',
-                    color: 'white',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '12px',
-                    fontWeight: 'bold'
-                  }}>
-                    {user?.name?.charAt(0).toUpperCase() || 'U'}
-                  </span>
-                  <span style={{ fontSize: '14px' }}>
-                    {user?.name || 'User'}
-                  </span>
-                  <span style={{ fontSize: '12px' }}>▼</span>
-                </button>
+                <span style={{
+                  width: '24px',
+                  height: '24px',
+                  backgroundColor: '#007bff',
+                  color: 'white',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '12px',
+                  fontWeight: 'bold'
+                }}>
+                  {user?.name?.charAt(0).toUpperCase() || 'U'}
+                </span>
+                <span style={{ fontSize: '14px' }}>
+                  {user?.name || 'User'}
+                </span>
+                <span style={{ fontSize: '12px' }}>▼</span>
+              </button>
 
-                {/* Dropdown Menu */}
-                {showUserMenu && (
+              {/* Dropdown Menu */}
+              {showUserMenu && (
+                <div style={{
+                  position: 'absolute',
+                  top: '100%',
+                  right: '0',
+                  backgroundColor: 'white',
+                  border: '1px solid #ddd',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  minWidth: '200px',
+                  zIndex: 1000,
+                  marginTop: '8px'
+                }}>
                   <div style={{
-                    position: 'absolute',
-                    top: '100%',
-                    right: '0',
-                    backgroundColor: 'white',
-                    border: '1px solid #ddd',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                    minWidth: '200px',
-                    zIndex: 1000,
-                    marginTop: '8px'
+                    padding: '12px 16px',
+                    borderBottom: '1px solid #eee',
+                    backgroundColor: '#f8f9fa'
                   }}>
-                    <div style={{
-                      padding: '12px 16px',
-                      borderBottom: '1px solid #eee',
-                      backgroundColor: '#f8f9fa'
-                    }}>
-                      <div style={{ fontWeight: '600', fontSize: '14px' }}>
-                        {user?.name}
-                      </div>
-                      <div style={{ fontSize: '12px', color: '#666' }}>
-                        {user?.email}
-                      </div>
+                    <div style={{ fontWeight: '600', fontSize: '14px' }}>
+                      {user?.name}
                     </div>
-                    
-                    <Link
-                      to="/dashboard"
-                      onClick={() => setShowUserMenu(false)}
-                      style={{
-                        display: 'block',
-                        padding: '12px 16px',
-                        textDecoration: 'none',
-                        color: '#333',
-                        fontSize: '14px',
-                        borderBottom: '1px solid #eee'
-                      }}
-                    >
-                      📊 Dashboard
-                    </Link>
-                    
-                    <Link
-                      to="/account"
-                      onClick={() => setShowUserMenu(false)}
-                      style={{
-                        display: 'block',
-                        padding: '12px 16px',
-                        textDecoration: 'none',
-                        color: '#333',
-                        fontSize: '14px',
-                        borderBottom: '1px solid #eee'
-                      }}
-                    >
-                      ⚙️ Account Settings
-                    </Link>
-                    
-                    <button
-                      onClick={handleLogout}
-                      style={{
-                        width: '100%',
-                        textAlign: 'left',
-                        padding: '12px 16px',
-                        border: 'none',
-                        backgroundColor: 'transparent',
-                        color: '#dc3545',
-                        fontSize: '14px',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      🚪 Logout
-                    </button>
+                    <div style={{ fontSize: '12px', color: '#666' }}>
+                      {user?.email}
+                    </div>
                   </div>
-                )}
-              </div>
-            </>
+                  
+                  {/* Admin: all normal user links except Employee Dashboard */}
+                  {user?.role === 'admin' && (
+                    <>
+                      <Link to="/search" onClick={() => setShowUserMenu(false)} style={{ display: 'block', padding: '12px 16px', textDecoration: 'none', color: '#333', fontSize: '14px', borderBottom: '1px solid #eee' }}>🔍 Search</Link>
+                      <Link to="/itemlist" onClick={() => setShowUserMenu(false)} style={{ display: 'block', padding: '12px 16px', textDecoration: 'none', color: '#333', fontSize: '14px', borderBottom: '1px solid #eee' }}>📋 Browse Items</Link>
+                      <Link to="/account" onClick={() => setShowUserMenu(false)} style={{ display: 'block', padding: '12px 16px', textDecoration: 'none', color: '#333', fontSize: '14px', borderBottom: '1px solid #eee' }}>⚙️ Account Settings</Link>
+                    </>
+                  )}
+                  
+                  {/* Employee: all normal user links plus Employee Dashboard */}
+                  {user?.role === 'employee' && (
+                    <>
+                      <Link to="/search" onClick={() => setShowUserMenu(false)} style={{ display: 'block', padding: '12px 16px', textDecoration: 'none', color: '#333', fontSize: '14px', borderBottom: '1px solid #eee' }}>🔍 Search</Link>
+                      <Link to="/itemlist" onClick={() => setShowUserMenu(false)} style={{ display: 'block', padding: '12px 16px', textDecoration: 'none', color: '#333', fontSize: '14px', borderBottom: '1px solid #eee' }}>📋 Browse Items</Link>
+                      <Link to="/account" onClick={() => setShowUserMenu(false)} style={{ display: 'block', padding: '12px 16px', textDecoration: 'none', color: '#333', fontSize: '14px', borderBottom: '1px solid #eee' }}>⚙️ Account Settings</Link>
+                      <Link to="/employee" onClick={() => setShowUserMenu(false)} style={{ display: 'block', padding: '12px 16px', textDecoration: 'none', color: '#333', fontSize: '14px', borderBottom: '1px solid #eee' }}>👷 Employee Dashboard</Link>
+                    </>
+                  )}
+                  
+                  {/* Regular users: Dashboard and Account Settings */}
+                  {user?.role !== 'admin' && user?.role !== 'employee' && (
+                    <>
+                      <Link to="/dashboard" onClick={() => setShowUserMenu(false)} style={{ display: 'block', padding: '12px 16px', textDecoration: 'none', color: '#333', fontSize: '14px', borderBottom: '1px solid #eee' }}>📊 Dashboard</Link>
+                      <Link to="/account" onClick={() => setShowUserMenu(false)} style={{ display: 'block', padding: '12px 16px', textDecoration: 'none', color: '#333', fontSize: '14px', borderBottom: '1px solid #eee' }}>⚙️ Account Settings</Link>
+                    </>
+                  )}
+                  
+                  <button
+                    onClick={handleLogout}
+                    style={{
+                      width: '100%',
+                      textAlign: 'left',
+                      padding: '12px 16px',
+                      border: 'none',
+                      backgroundColor: 'transparent',
+                      color: '#dc3545',
+                      fontSize: '14px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    🚪 Logout
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <Link
               to="/login"

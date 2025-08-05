@@ -1,127 +1,186 @@
 import express from 'express';
 import GroceryList from '../models/GroceryList.js';
-import GroceryItem from '../models/GroceryItem.js';
-
+import auth from '../middleware/auth.js';
 
 const router = express.Router();
 
-// GET /api/grocery-lists
-router.get('/', async (req, res) => {
+// GET /api/grocery-lists - Get user's grocery lists (protected)
+router.get('/', auth, async (req, res) => {
   try {
-    const lists = await GroceryList.find().populate('items.item');
-    res.status(200).json(lists);
+    const lists = await GroceryList.find({ createdBy: req.user.userId })
+      .populate({
+        path: 'items.item',
+        select: 'itemName price originalPrice promotion store itemImage unitDetails category dealValidUntil'
+      });
+    res.status(200).json({ success: true, lists });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch lists', error: err.message });
+    res.status(500).json({ success: false, message: 'Failed to fetch lists', error: err.message });
   }
 });
 
-// POST /api/grocery-lists
-router.post('/', async (req, res) => {
+// GET /api/grocery-lists/:listId - Get a specific grocery list (protected)
+router.get('/:listId', auth, async (req, res) => {
+  const { listId } = req.params;
+
+  try {
+    const list = await GroceryList.findOne({ _id: listId, createdBy: req.user.userId })
+      .populate('items.item');
+    if (!list) {
+      return res.status(404).json({ success: false, message: 'Grocery list not found' });
+    }
+
+    res.status(200).json({ success: true, list });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to fetch list', error: err.message });
+  }
+});
+
+// POST /api/grocery-lists/:listId/items - Add item to specific list (protected)
+router.post('/:listId/items', auth, async (req, res) => {
+  const { listId } = req.params;
+  const { itemId, itemName, price, store } = req.body;
+
+  try {
+    // Verify the list belongs to the user
+    const list = await GroceryList.findOne({ _id: listId, createdBy: req.user.userId });
+    if (!list) {
+      return res.status(404).json({ success: false, message: 'Grocery list not found' });
+    }
+
+    // Check if item already exists in the list
+    const existingItem = list.items.find(item => item.item.toString() === itemId);
+    if (existingItem) {
+      existingItem.quantity += 1;
+      existingItem.itemName = itemName;
+      existingItem.price = price;
+      existingItem.store = store;
+    } else {
+      const newItem = {
+        item: itemId,
+        quantity: 1,
+        itemName: itemName,
+        price: price,
+        store: store
+      };
+      list.items.push(newItem);
+    }
+
+    await list.save();
+    res.status(200).json({ 
+      success: true, 
+      message: existingItem ? 'Item quantity updated' : 'Item added to list',
+      list 
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to add item to list', error: err.message });
+  }
+});
+
+// POST /api/grocery-lists - Create new grocery list (protected)
+router.post('/', auth, async (req, res) => {
   const { name } = req.body;
 
   try {
-    const count = await GroceryList.countDocuments();
+    const userListCount = await GroceryList.countDocuments({ createdBy: req.user.userId });
     const newList = new GroceryList({
-      listName: name || `List ${count + 1}`
+      listName: name || `My List ${userListCount + 1}`,
+      createdBy: req.user.userId
     });
 
     await newList.save();
-    res.status(201).json(newList);
+    res.status(201).json({ success: true, list: newList });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to create list', error: err.message });
+    res.status(500).json({ success: false, message: 'Failed to create list', error: err.message });
   }
 });
 
-// DELETE /api/grocery-lists/:listId
-router.delete('/:listId/remove-item/:itemId', async (req, res) => {
+// DELETE /api/grocery-lists/:listId - Delete entire list (protected)
+router.delete('/:listId', auth, async (req, res) => {
+  const { listId } = req.params;
+
+  try {
+    // Verify the list belongs to the user
+    const list = await GroceryList.findOne({ _id: listId, createdBy: req.user.userId });
+    if (!list) {
+      return res.status(404).json({ success: false, message: 'Grocery list not found' });
+    }
+
+    await GroceryList.findByIdAndDelete(listId);
+    res.status(200).json({ success: true, message: 'List deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to delete list', error: err.message });
+  }
+});
+
+// DELETE /api/grocery-lists/:listId/remove-item/:itemId - Remove item from list (protected)
+router.delete('/:listId/remove-item/:itemId', auth, async (req, res) => {
   const { listId, itemId } = req.params;
 
   try {
-    const list = await GroceryList.findById(listId);
-    if (!list) return res.status(404).json({ message: 'List not found' });
+    // Verify the list belongs to the user
+    const list = await GroceryList.findOne({ _id: listId, createdBy: req.user.userId });
+    if (!list) {
+      return res.status(404).json({ success: false, message: 'Grocery list not found' });
+    }
 
     const originalLength = list.items.length;
     list.items = list.items.filter(i => i.item.toString() !== itemId);
 
     if (list.items.length === originalLength) {
-      return res.status(404).json({ message: 'Item not found in list' });
+      return res.status(404).json({ success: false, message: 'Item not found in list' });
     }
 
     await list.save();
-    res.status(200).json({ message: 'Item removed from list' });
+    res.status(200).json({ success: true, message: 'Item removed from list' });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to remove item', error: err.message });
+    res.status(500).json({ success: false, message: 'Failed to remove item', error: err.message });
   }
 });
 
-
-// POST /api/grocery-lists/:listId/add-item
-router.post('/user/:userId/add-item', async (req, res) => {
-  const { userId } = req.params;
-  const { itemId } = req.body;
-
-  try {
-    const item = await GroceryItem.findById(itemId);
-    if (!item) return res.status(404).json({ message: 'Item not found' });
-
-    let list = await GroceryList.findOne({ createdBy: userId });
-
-    if (!list) {
-      list = new GroceryList({
-        listName: 'My Grocery List',
-        createdBy: userId,
-        items: [{ item: itemId, quantity: 1 }]
-      });
-    } else {
-      const existing = list.items.find(i => i.item.toString() === itemId);
-      if (existing) {
-        existing.quantity += 1;
-      } else {
-        list.items.push({ item: itemId, quantity: 1 });
-      }
-    }
-
-    await list.save();
-    res.status(200).json({ message: 'Item added/updated', list });
-  } catch (err) {
-    console.error('Error adding item:', err);
-    res.status(500).json({ message: 'Server error', error: err.message });
-  }
-});
-
-// GET /api/grocery-lists/:listId/items
-router.get('/:listId/items', async (req, res) => {
+// GET /api/grocery-lists/:listId/items - Get items in a specific list (protected)
+router.get('/:listId/items', auth, async (req, res) => {
   const { listId } = req.params;
 
   try {
-    const list = await GroceryList.findById(listId).populate('items.item');
+    // Verify the list belongs to the user
+    const list = await GroceryList.findOne({ _id: listId, createdBy: req.user.userId })
+      .populate({
+        path: 'items.item',
+        select: 'itemName price originalPrice promotion store itemImage unitDetails category dealValidUntil'
+      });
     if (!list) {
-      return res.status(404).json({ message: 'Grocery list not found' });
+      return res.status(404).json({ success: false, message: 'Grocery list not found' });
     }
 
     res.status(200).json(list.items);
   } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch items', error: err.message });
+    res.status(500).json({ success: false, message: 'Failed to fetch items', error: err.message });
   }
 });
 
-router.put('/:listId/update-quantity', async (req, res) => {
+// PUT /api/grocery-lists/:listId/update-quantity - Update item quantity (protected)
+router.put('/:listId/update-quantity', auth, async (req, res) => {
   const { listId } = req.params;
   const { itemId, quantity } = req.body;
 
   try {
-    const list = await GroceryList.findById(listId);
-    if (!list) return res.status(404).json({ message: 'List not found' });
+    // Verify the list belongs to the user
+    const list = await GroceryList.findOne({ _id: listId, createdBy: req.user.userId });
+    if (!list) {
+      return res.status(404).json({ success: false, message: 'Grocery list not found' });
+    }
 
     const entry = list.items.find(i => i.item.toString() === itemId);
-    if (!entry) return res.status(404).json({ message: 'Item not found in list' });
+    if (!entry) {
+      return res.status(404).json({ success: false, message: 'Item not found in list' });
+    }
 
     entry.quantity = quantity;
     await list.save();
 
-    res.status(200).json({ message: 'Quantity updated', itemId, quantity });
+    res.status(200).json({ success: true, message: 'Quantity updated', itemId, quantity });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to update quantity', error: err.message });
+    res.status(500).json({ success: false, message: 'Failed to update quantity', error: err.message });
   }
 });
 

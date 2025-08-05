@@ -12,7 +12,6 @@ router.get('/:id', async (req, res) => {
     }
     res.json(item);
   } catch (error) {
-    console.error('Error fetching item:', error);
     res.status(500).json({ error: 'Failed to retrieve item' });
   }
 });
@@ -26,7 +25,6 @@ router.get('/', async (req, res) => {
     const items = await GroceryItem.find().skip(skip).limit(limit);
     res.json(items);
   } catch (error) {
-    console.error('Error fetching paginated items:', error);
     res.status(500).json({ error: 'Failed to retrieve items' });
   }
 });
