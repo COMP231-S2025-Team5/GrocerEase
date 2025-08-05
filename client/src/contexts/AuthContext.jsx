@@ -106,6 +106,12 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const setAuth = (token, user) => {
+    localStorage.setItem('grocerease_token', token);
+    setToken(token);
+    setUser(user);
+  };
+
   const value = {
     user,
     token,
@@ -113,6 +119,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
+    setAuth,
     isAuthenticated: !!user
   };
 

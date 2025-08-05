@@ -216,11 +216,9 @@ const EmployeeDashboard = () => {
           itemName: '',
           category: '',
           price: '',
-          unitDetails: { unit: '', weight: '' },
+          unitDetails: { unit: 'item', quantity: 1 },
           stockCount: '',
-          stockStatus: 'in-stock',
-          description: '',
-          barcode: ''
+          stockStatus: 'in-stock'
         });
         fetchProducts(pagination.currentPage);
       } else {
@@ -1139,8 +1137,7 @@ const EmployeeDashboard = () => {
                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
                   Unit
                 </label>
-                <input
-                  type="text"
+                <select
                   value={newItemData.unitDetails.unit}
                   onChange={(e) => setNewItemData(prev => ({ 
                     ...prev, 
@@ -1154,8 +1151,19 @@ const EmployeeDashboard = () => {
                     backgroundColor: 'white',
                     color: '#333'
                   }}
-                  placeholder="e.g., lb, oz, piece"
-                />
+                >
+                  <option value="item">Item</option>
+                  <option value="each">Each</option>
+                  <option value="lb">Pound (lb)</option>
+                  <option value="oz">Ounce (oz)</option>
+                  <option value="kg">Kilogram (kg)</option>
+                  <option value="g">Gram (g)</option>
+                  <option value="pack">Pack</option>
+                  <option value="bottle">Bottle</option>
+                  <option value="can">Can</option>
+                  <option value="box">Box</option>
+                  <option value="bag">Bag</option>
+                </select>
               </div>
 
               <div>
@@ -1182,47 +1190,6 @@ const EmployeeDashboard = () => {
               </div>
             </div>
 
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-                Description
-              </label>
-              <textarea
-                value={newItemData.description}
-                onChange={(e) => setNewItemData(prev => ({ ...prev, description: e.target.value }))}
-                rows="3"
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  backgroundColor: 'white',
-                  color: '#333',
-                  resize: 'vertical'
-                }}
-                placeholder="Optional product description"
-              />
-            </div>
-
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-                Barcode
-              </label>
-              <input
-                type="text"
-                value={newItemData.barcode}
-                onChange={(e) => setNewItemData(prev => ({ ...prev, barcode: e.target.value }))}
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  backgroundColor: 'white',
-                  color: '#333'
-                }}
-                placeholder="Optional barcode"
-              />
-            </div>
-
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
               <button
                 onClick={() => {
@@ -1231,11 +1198,9 @@ const EmployeeDashboard = () => {
                     itemName: '',
                     category: '',
                     price: '',
-                    unitDetails: { unit: '', weight: '' },
+                    unitDetails: { unit: 'item', quantity: 1 },
                     stockCount: '',
-                    stockStatus: 'in-stock',
-                    description: '',
-                    barcode: ''
+                    stockStatus: 'in-stock'
                   });
                   setError('');
                 }}
@@ -1381,9 +1346,8 @@ const EmployeeDashboard = () => {
                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
                   Unit
                 </label>
-                <input
-                  type="text"
-                  value={editItemData.unitDetails?.unit || ''}
+                <select
+                  value={editItemData.unitDetails?.unit || 'item'}
                   onChange={(e) => setEditItemData(prev => ({ 
                     ...prev, 
                     unitDetails: { ...prev.unitDetails, unit: e.target.value }
@@ -1396,7 +1360,19 @@ const EmployeeDashboard = () => {
                     backgroundColor: 'white',
                     color: '#333'
                   }}
-                />
+                >
+                  <option value="item">Item</option>
+                  <option value="each">Each</option>
+                  <option value="lb">Pound (lb)</option>
+                  <option value="oz">Ounce (oz)</option>
+                  <option value="kg">Kilogram (kg)</option>
+                  <option value="g">Gram (g)</option>
+                  <option value="pack">Pack</option>
+                  <option value="bottle">Bottle</option>
+                  <option value="can">Can</option>
+                  <option value="box">Box</option>
+                  <option value="bag">Bag</option>
+                </select>
               </div>
 
               <div>
@@ -1421,45 +1397,6 @@ const EmployeeDashboard = () => {
                   <option value="discontinued">Discontinued</option>
                 </select>
               </div>
-            </div>
-
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-                Description
-              </label>
-              <textarea
-                value={editItemData.description || ''}
-                onChange={(e) => setEditItemData(prev => ({ ...prev, description: e.target.value }))}
-                rows="3"
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  backgroundColor: 'white',
-                  color: '#333',
-                  resize: 'vertical'
-                }}
-              />
-            </div>
-
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-                Barcode
-              </label>
-              <input
-                type="text"
-                value={editItemData.barcode || ''}
-                onChange={(e) => setEditItemData(prev => ({ ...prev, barcode: e.target.value }))}
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  backgroundColor: 'white',
-                  color: '#333'
-                }}
-              />
             </div>
 
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>

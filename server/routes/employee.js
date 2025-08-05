@@ -79,10 +79,25 @@ router.get('/products', auth, requireEmployee, async (req, res) => {
     const filterQuery = { ...storeFilter };
 
     if (q && q.trim() !== '') {
-      filterQuery.$or = [
-        { itemName: { $regex: q.trim(), $options: 'i' } },
-        { 'store.name': { $regex: q.trim(), $options: 'i' } }
-      ];
+      // For search, we need to combine store filter with search criteria
+      // If we have a store filter, we need to ensure both store restriction AND search match
+      if (Object.keys(storeFilter).length > 0) {
+        filterQuery.$and = [
+          storeFilter, // Employee's store restriction
+          {
+            $or: [
+              { itemName: { $regex: q.trim(), $options: 'i' } },
+              { 'store.name': { $regex: q.trim(), $options: 'i' } }
+            ]
+          }
+        ];
+      } else {
+        // Admin - no store restriction, just search
+        filterQuery.$or = [
+          { itemName: { $regex: q.trim(), $options: 'i' } },
+          { 'store.name': { $regex: q.trim(), $options: 'i' } }
+        ];
+      }
     }
 
     if (category && category !== 'all') {
@@ -114,8 +129,9 @@ router.get('/products', auth, requireEmployee, async (req, res) => {
     ]);
 
     // Get filter options for employee's store
-    const [categories, stockStatuses] = await Promise.all([
-      GroceryItem.distinct('category', storeFilter),
+    // For categories, include all available categories so employees can add items from any category
+    const allCategories = ['fruits', 'vegetables', 'meat', 'dairy', 'bakery', 'pantry', 'frozen', 'beverages', 'snacks', 'household', 'personal-care', 'other'];
+    const [stockStatuses] = await Promise.all([
       GroceryItem.distinct('stockStatus', storeFilter)
     ]);
 
@@ -133,7 +149,7 @@ router.get('/products', auth, requireEmployee, async (req, res) => {
           hasPrevPage: pageNum > 1
         },
         filters: {
-          categories: categories.sort(),
+          categories: allCategories.sort(),
           stockStatuses: stockStatuses.sort()
         },
         employeeStore: {
