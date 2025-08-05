@@ -231,6 +231,16 @@ const ItemPage = () => {
     }
   };
 
+  const formatCategoryName = (category) => {
+    if (!category) return '';
+    
+    // Convert to CamelCase: split by hyphens, capitalize each word, join without spaces
+    return category
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join('');
+  };
+
   if (loading) {
     return (
       <div style={{
@@ -410,10 +420,9 @@ const ItemPage = () => {
                 color: '#0066cc',
                 borderRadius: '20px',
                 fontSize: '0.9rem',
-                fontWeight: '500',
-                textTransform: 'capitalize'
+                fontWeight: '500'
               }}>
-                {item.category}
+                {formatCategoryName(item.category)}
               </span>
             )}
           </div>
@@ -572,7 +581,7 @@ const ItemPage = () => {
             <strong>Item Name:</strong> {item.itemName}
           </div>
           <div>
-            <strong>Category:</strong> {item.category || 'Not specified'}
+            <strong>Category:</strong> {formatCategoryName(item.category) || 'Not specified'}
           </div>
           <div>
             <strong>Current Price:</strong> {formatPrice(item.price)}

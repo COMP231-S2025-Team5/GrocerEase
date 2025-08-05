@@ -8,6 +8,17 @@ import { useAuth } from '../contexts/AuthContext';
 
 const EmployeeDashboard = () => {
   const { user, token } = useAuth();
+
+  // Helper function to format category names to CamelCase
+  const formatCategoryName = (category) => {
+    if (!category) return '';
+    
+    // Convert to CamelCase: split by hyphens, capitalize each word, join without spaces
+    return category
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join('');
+  };
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -559,7 +570,7 @@ const EmployeeDashboard = () => {
               <option value="all">All Categories</option>
               {availableFilters.categories.map(cat => (
                 <option key={cat} value={cat} style={{ color: '#333', backgroundColor: 'white' }}>
-                  {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                  {formatCategoryName(cat)}
                 </option>
               ))}
             </select>
@@ -743,7 +754,7 @@ const EmployeeDashboard = () => {
                       {product.unitDetails && ` per ${product.unitDetails.unit}`}
                     </p>
                     <p style={{ margin: '5px 0', color: '#666' }}>
-                      <strong>Category:</strong> {product.category}
+                      <strong>Category:</strong> {formatCategoryName(product.category)}
                     </p>
                     <p style={{ margin: '5px 0', color: '#666' }}>
                       <strong>Stock Count:</strong> {product.stockCount || 0}
@@ -1087,7 +1098,7 @@ const EmployeeDashboard = () => {
                 >
                   <option value="">Select Category</option>
                   {availableFilters.categories.map(cat => (
-                    <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
+                    <option key={cat} value={cat}>{formatCategoryName(cat)}</option>
                   ))}
                 </select>
               </div>
@@ -1298,7 +1309,7 @@ const EmployeeDashboard = () => {
                   }}
                 >
                   {availableFilters.categories.map(cat => (
-                    <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
+                    <option key={cat} value={cat}>{formatCategoryName(cat)}</option>
                   ))}
                 </select>
               </div>
