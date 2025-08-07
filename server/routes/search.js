@@ -49,6 +49,7 @@ router.get('/',
     } = req.query;
 
     // Build filter queries using utility functions
+    const hasTextQuery = q && q.trim() !== '';
     const textQuery = buildTextQuery(q);
     const priceQuery = buildPriceQuery(minPrice, maxPrice);
     const categoryQuery = buildCategoryQuery(category);
@@ -59,7 +60,50 @@ router.get('/',
     // Active items filter
     const activeQuery = includeInactive === 'true' ? {} : { isActive: true };
 
-    // Combine all filters
+    // Check if any non-text filters are applied
+    const hasFilters = Object.keys(priceQuery).length > 0 || 
+                      Object.keys(categoryQuery).length > 0 || 
+                      Object.keys(storeQuery).length > 0 || 
+                      Object.keys(unitQuery).length > 0 || 
+                      Object.keys(promotionQuery).length > 0;
+
+    // If no text query and no filters, return empty results (prevent showing all items by default)
+    if (!hasTextQuery && !hasFilters) {
+      return res.json({
+        success: true,
+        message: 'Please provide search keywords or apply filters',
+        data: {
+          results: [],
+          pagination: {
+            currentPage: 1,
+            totalPages: 0,
+            totalItems: 0,
+            itemsPerPage: parseInt(limit),
+            hasNextPage: false,
+            hasPrevPage: false
+          },
+          appliedFilters: {
+            query: '',
+            category: category || 'all',
+            priceRange: { min: minPrice || null, max: maxPrice || null },
+            store: store || '',
+            unit: unit || 'all',
+            hasPromotion: hasPromotion === 'true',
+            validDealsOnly: validDealsOnly === 'true',
+            includeInactive: includeInactive === 'true',
+            sortBy: sortBy || 'relevance',
+            sortOrder: sortOrder || 'asc'
+          },
+          availableFilters: {
+            categories: await GroceryItem.distinct('category'),
+            stores: await GroceryItem.distinct('store.name'),
+            units: await GroceryItem.distinct('unitDetails.unit')
+          }
+        }
+      });
+    }
+
+    // Combine all filters (including empty textQuery if no text search)
     const filterQuery = combineFilters(
       textQuery,
       priceQuery,
@@ -70,8 +114,9 @@ router.get('/',
       activeQuery
     );
 
-    // Build sort options
-    const sortOptions = buildSortQuery(sortBy, sortOrder);
+    // Build sort options - use default sort when no text query
+    const effectiveSortBy = !hasTextQuery && sortBy === 'relevance' ? 'name' : sortBy;
+    const sortOptions = buildSortQuery(effectiveSortBy, sortOrder);
 
     // Calculate pagination
     const pagination = buildPagination(page, limit);
@@ -79,8 +124,8 @@ router.get('/',
     // Execute search query
     const searchQuery = GroceryItem.find(filterQuery);
 
-    // Add text score for relevance sorting if text search is used
-    if (q && q.trim() !== '') {
+    // Add text score for relevance sorting only if text search is used
+    if (hasTextQuery) {
       searchQuery.select({ score: { $meta: 'textScore' } });
     }
 
@@ -129,7 +174,7 @@ router.get('/',
           hasPromotion: hasPromotion === 'true',
           validDealsOnly: validDealsOnly === 'true',
           includeInactive: includeInactive === 'true',
-          sortBy: sortBy || 'relevance',
+          sortBy: effectiveSortBy || 'name',
           sortOrder: sortOrder || 'asc'
         },
         availableFilters: {
@@ -497,6 +542,199 @@ router.get('/suggestions', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error fetching suggestions',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
+    });
+  }
+});
+
+// Browse items by store (filter-only endpoint)
+router.get('/browse/store/:storeName', async (req, res) => {
+  try {
+    const { storeName } = req.params;
+    const {
+      category,
+      minPrice,
+      maxPrice,
+      unit,
+      hasPromotion,
+      validDealsOnly,
+      includeInactive,
+      sortBy = 'name',
+      sortOrder = 'asc',
+      page = 1,
+      limit = 20
+    } = req.query;
+
+    // Decode store name from URL
+    const decodedStoreName = decodeURIComponent(storeName);
+
+    // Build filter queries (excluding text search)
+    const priceQuery = buildPriceQuery(minPrice, maxPrice);
+    const categoryQuery = buildCategoryQuery(category);
+    const storeQuery = { 'store.name': { $regex: decodedStoreName, $options: 'i' } };
+    const unitQuery = buildUnitQuery(unit);
+    const promotionQuery = buildPromotionQuery(hasPromotion, validDealsOnly);
+    const activeQuery = includeInactive === 'true' ? {} : { isActive: true };
+
+    // Combine all filters
+    const filterQuery = combineFilters(
+      priceQuery,
+      categoryQuery,
+      storeQuery,
+      unitQuery,
+      promotionQuery,
+      activeQuery
+    );
+
+    // Build sort options
+    const sortOptions = buildSortQuery(sortBy, sortOrder);
+    const pagination = buildPagination(page, limit);
+
+    // Execute query
+    const [results, totalCount, storeInfo] = await Promise.all([
+      GroceryItem.find(filterQuery)
+        .sort(sortOptions)
+        .skip(pagination.skip)
+        .limit(pagination.limit)
+        .lean(),
+      GroceryItem.countDocuments(filterQuery),
+      GroceryItem.findOne({ 'store.name': { $regex: decodedStoreName, $options: 'i' } })
+        .select('store')
+        .lean()
+    ]);
+
+    const totalPages = Math.ceil(totalCount / pagination.limit);
+
+    res.json({
+      success: true,
+      message: `Items from ${decodedStoreName} retrieved successfully`,
+      data: {
+        store: storeInfo?.store || { name: decodedStoreName },
+        results,
+        pagination: {
+          currentPage: pagination.page,
+          totalPages,
+          totalItems: totalCount,
+          itemsPerPage: pagination.limit,
+          hasNextPage: pagination.page < totalPages,
+          hasPrevPage: pagination.page > 1
+        },
+        appliedFilters: {
+          store: decodedStoreName,
+          category: category || 'all',
+          priceRange: {
+            min: minPrice || null,
+            max: maxPrice || null
+          },
+          unit: unit || 'all',
+          hasPromotion: hasPromotion === 'true',
+          validDealsOnly: validDealsOnly === 'true',
+          includeInactive: includeInactive === 'true',
+          sortBy,
+          sortOrder
+        }
+      }
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error browsing store items',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
+    });
+  }
+});
+
+// Browse items by category (filter-only endpoint)
+router.get('/browse/category/:categoryName', async (req, res) => {
+  try {
+    const { categoryName } = req.params;
+    const {
+      store,
+      minPrice,
+      maxPrice,
+      unit,
+      hasPromotion,
+      validDealsOnly,
+      includeInactive,
+      sortBy = 'name',
+      sortOrder = 'asc',
+      page = 1,
+      limit = 20
+    } = req.query;
+
+    // Decode category name from URL
+    const decodedCategoryName = decodeURIComponent(categoryName);
+
+    // Build filter queries
+    const priceQuery = buildPriceQuery(minPrice, maxPrice);
+    const categoryQuery = { category: decodedCategoryName };
+    const storeQuery = buildStoreQuery(store);
+    const unitQuery = buildUnitQuery(unit);
+    const promotionQuery = buildPromotionQuery(hasPromotion, validDealsOnly);
+    const activeQuery = includeInactive === 'true' ? {} : { isActive: true };
+
+    // Combine all filters
+    const filterQuery = combineFilters(
+      priceQuery,
+      categoryQuery,
+      storeQuery,
+      unitQuery,
+      promotionQuery,
+      activeQuery
+    );
+
+    // Build sort options
+    const sortOptions = buildSortQuery(sortBy, sortOrder);
+    const pagination = buildPagination(page, limit);
+
+    // Execute query
+    const [results, totalCount] = await Promise.all([
+      GroceryItem.find(filterQuery)
+        .sort(sortOptions)
+        .skip(pagination.skip)
+        .limit(pagination.limit)
+        .lean(),
+      GroceryItem.countDocuments(filterQuery)
+    ]);
+
+    const totalPages = Math.ceil(totalCount / pagination.limit);
+
+    res.json({
+      success: true,
+      message: `${decodedCategoryName} category items retrieved successfully`,
+      data: {
+        category: decodedCategoryName,
+        results,
+        pagination: {
+          currentPage: pagination.page,
+          totalPages,
+          totalItems: totalCount,
+          itemsPerPage: pagination.limit,
+          hasNextPage: pagination.page < totalPages,
+          hasPrevPage: pagination.page > 1
+        },
+        appliedFilters: {
+          category: decodedCategoryName,
+          store: store || '',
+          priceRange: {
+            min: minPrice || null,
+            max: maxPrice || null
+          },
+          unit: unit || 'all',
+          hasPromotion: hasPromotion === 'true',
+          validDealsOnly: validDealsOnly === 'true',
+          includeInactive: includeInactive === 'true',
+          sortBy,
+          sortOrder
+        }
+      }
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error browsing category items',
       error: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
     });
   }
