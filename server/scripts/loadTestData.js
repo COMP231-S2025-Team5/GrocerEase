@@ -608,22 +608,12 @@ const loadCompleteTestData = async () => {
     console.log('   (+ 3 more regular users...)');
 
     console.log('\n📊 === DATA SUMMARY ===');
-    console.log(`   🏪 ${insertedStores.length} Stores`);
-    console.log(`   👑 ${usersByRole.admin?.length || 0} Admins`);
-    console.log(`   👷 ${usersByRole.employee?.length || 0} Employees`);
-    console.log(`   👤 ${usersByRole.user?.length || 0} Regular Users`);
-    console.log(`   🛒 ${insertedItems.length} Grocery Items`);
-    console.log(`   🏷️ ${insertedItems.filter(item => item.promotion).length} Items with promotions`);
-
-    console.log('\n✅ === FEATURES READY FOR TESTING ===');
-    console.log('   🔐 Role-based authentication (Admin/Employee/User)');
-    console.log('   🏪 Multi-store inventory management');
-    console.log('   🔍 Search and filtering by store/category/status');
-    console.log('   📝 CRUD operations for items (Admin/Employee)');
-    console.log('   📱 Employee dashboard with store-specific items');
-    console.log('   🛡️ Store-based access control for employees');
-    console.log('   🏷️ Promotions and deals management');
-    console.log('   📊 Stock status tracking');
+    console.log(`   ${insertedStores.length} Stores`);
+    console.log(`   ${usersByRole.admin?.length || 0} Admins`);
+    console.log(`   ${usersByRole.employee?.length || 0} Employees`);
+    console.log(`   ${usersByRole.user?.length || 0} Regular Users`);
+    console.log(`   ${insertedItems.length} Grocery Items`);
+    console.log(`   ${insertedItems.filter(item => item.promotion).length} Items with promotions`);
 
     console.log('\n🎉 Test database populated successfully!');
     console.log('   Start the server and begin testing at: http://localhost:3000');
